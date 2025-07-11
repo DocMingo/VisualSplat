@@ -22,4 +22,7 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Li_play\src\GitGudOpenGL\LearnOpenGL\VisualSplat.md" />
+  </ItemGroup>
 </Project>

@@ -131,6 +131,9 @@
     <ClCompile Include="G:\pointcloudrendering\Glad\src\glad.c" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Li_play\src\GitGudOpenGL\LearnOpenGL\VisualSplat.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
