@@ -132,7 +132,10 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Li_play\src\GitGudOpenGL\LearnOpenGL\VisualSplat.md" />
+    <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\stb_image.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
