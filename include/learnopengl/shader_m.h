@@ -17,7 +17,7 @@ public:
     // ------------------------------------------------------------------------
     Shader(const char* vertexPath, const char* fragmentPath)
     {
-        // 1. retrieve the vertex/fragment source code from filePath
+        // 1. retrieve the vertex/fragment source code from filePath 从文件路径中获取顶点和片段着色器的源码
         std::string vertexCode;
         std::string fragmentCode;
         std::ifstream vShaderFile;
@@ -47,25 +47,24 @@ public:
         }
         const char* vShaderCode = vertexCode.c_str();
         const char* fShaderCode = fragmentCode.c_str();
-        // 2. compile shaders
-        unsigned int vertex, fragment;
+        // 2. compile shaders 编译着色器
         // vertex shader
-        vertex = glCreateShader(GL_VERTEX_SHADER);
+        unsigned int vertex{ glCreateShader(GL_VERTEX_SHADER) }; // 创建着色器程序类对象，将源码放入后进行编译
         glShaderSource(vertex, 1, &vShaderCode, NULL);
         glCompileShader(vertex);
         checkCompileErrors(vertex, "VERTEX");
         // fragment Shader
-        fragment = glCreateShader(GL_FRAGMENT_SHADER);
+        unsigned int fragment{ glCreateShader(GL_FRAGMENT_SHADER) };
         glShaderSource(fragment, 1, &fShaderCode, NULL);
         glCompileShader(fragment);
         checkCompileErrors(fragment, "FRAGMENT");
         // shader Program
-        ID = glCreateProgram();
+        ID = glCreateProgram(); // 创建着色器程序，一个着色器程序至少包含一个顶点着色器和一个片段着色器， glCreateProgram 返回一个 GLuint类型 ID
         glAttachShader(ID, vertex);
         glAttachShader(ID, fragment);
         glLinkProgram(ID);
         checkCompileErrors(ID, "PROGRAM");
-        // delete the shaders as they're linked into our program now and no longer necessary
+        // delete the shaders as they're linked into our program now and no longer necessary 链接完成即可删除着色器
         glDeleteShader(vertex);
         glDeleteShader(fragment);
 

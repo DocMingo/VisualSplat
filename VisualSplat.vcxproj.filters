@@ -27,8 +27,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
-    <None Include="x64\Release\camera.vs" />
-    <None Include="x64\Release\camera.fs" />
+    <None Include="src\resources\shader\camera.vs" />
+    <None Include="src\resources\shader\camera.fs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stb_image.h">

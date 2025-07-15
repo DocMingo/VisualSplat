@@ -73,7 +73,7 @@ int main()
 
     // build and compile our shader zprogram
     // ------------------------------------
-    Shader ourShader(R"(D:\Work\VSProject\VisualSplat\x64\Release\camera.vs)", R"(D:\Work\VSProject\VisualSplat\x64\Release\camera.fs)");
+    Shader ourShader(R"(resources/shader/camera.vs)", R"(resources/shader/camera.fs)");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -143,11 +143,11 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); // 使用函数更新顶点格式,0,表示 5 * sizeof(float) 表示每个顶点占用的总字节，即stride = 5 float
+    glEnableVertexAttribArray(0); // 启用顶点属性
     // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));  // 使用函数更新顶点颜色格式
+    glEnableVertexAttribArray(1); // 启用材质属性
 
 
     // load and create a texture 
@@ -166,7 +166,7 @@ int main()
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char* data = stbi_load(std::string(R"(D:\Work\VSProject\VisualSplat\src\resources\textures/container.jpg)").c_str(), &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load(std::string(R"(resources\textures/container.jpg)").c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -225,7 +225,7 @@ int main()
         // render
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 清除前一帧的颜色缓冲和深度缓冲
 
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
@@ -248,15 +248,23 @@ int main()
         glBindVertexArray(VAO);
         for (unsigned int i = 0; i < 10; i++)
         {
-            // calculate the model matrix for each object and pass it to shader before drawing
+            // calculate the model matrix for each object and pass it to shader before drawing  计算模型矩阵，用于将物体放置到渲染场景中心
             glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            ourShader.setMat4("model", model);
+            model = glm::translate(model, cubePositions[i]); // 将model沿着cubePositions[i]方向进行位移
+            float angle = 20.0f * i + 1;
+            // float timevalue = glfwGetTime();
+            // float changeValue = sin(timevalue) / 2.0f + 0.5f;
+            // float angle = 20.0f * i * changeValue;
+            model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f)); // glm::radians(angle) 将角度转换为弧度(GLM使用弧度), glm::vec3(1.0f, 0.3f, 0.5f) 旋转轴的方向向量，无需归一化
+            ourShader.setMat4("model", model); // 设置模型初始位移
 
+            // glPointSize(10.0f);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
+
+        float timevalue = glfwGetTime();
+        float changeValue = sin(timevalue) / 2.0f + 0.5f;
+        ourShader.setVec4("ourColor", changeValue, changeValue, changeValue, 1);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
