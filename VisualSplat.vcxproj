@@ -134,22 +134,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="G:\pointcloudrendering\Glad\src\glad.c" />
-    <ClCompile Include="include\learnopengl\shader_m.h" />
+    <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\sort.cpp" />
+    <ClCompile Include="src\Splats.cpp" />
+    <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
-    <None Include="src\resources\shader\2.2.basic_lighting.fs" />
-    <None Include="src\resources\shader\2.2.basic_lighting.vs" />
-    <None Include="src\resources\shader\2.2.light_cube.fs" />
-    <None Include="src\resources\shader\2.2.light_cube.vs" />
-    <None Include="src\resources\shader\camera.fs" />
-    <None Include="src\resources\shader\camera.vs" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\learnopengl\camera.h" />
+    <ClInclude Include="include\Camera.h" />
+    <ClInclude Include="include\sort.h" />
+    <ClInclude Include="include\Splats.h" />
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\stb_image_write.h" />
+    <ClInclude Include="include\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

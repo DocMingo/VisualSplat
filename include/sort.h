@@ -1,12 +1,13 @@
 //
 // Created by thomas on 29/11/23.
 //
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include "utils.h"
 #include <cmath>
 #include <vector>
 #include <iostream>
-// #include <GL/glew.h>
-#include <GLFW/glfw3.h>
+
 
 #ifndef DISS_SORT_H
 #define DISS_SORT_H

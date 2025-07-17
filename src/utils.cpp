@@ -1,7 +1,7 @@
 //
 // Created by thomas on 29/11/23.
 //
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <string>
 #include <fstream>

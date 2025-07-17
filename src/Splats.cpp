@@ -1,7 +1,7 @@
 //
 // Created by thomas on 11/12/23.
 //
-
+#include<glad/glad.h>
 #include "Splats.h"
 
 #define STB_IMAGE_IMPLEMENTATION
