@@ -1,127 +1,44 @@
-//
-// Created by thomas on 11/12/23.
-//
-// #include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <cstdlib>
-#include <string>
-#include <vector>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cmath>
-#include <algorithm>
-#include <array>
-#include <bitset>
+#include<pcl/point_types.h>
+#include<pcl/point_cloud.h>
+#include<string>
+#include<glm/glm.hpp>
 
+const float C0 = 0.28209479177387814f;
 
-#include "sort.h"
-#include "utils.h"
+struct GaussianData {
+	PCL_ADD_POINT4D; // property float x y z; the mean of the splat
 
+	float nx, ny, nz; // the normal of the splat, not sure what this is used for
+	float f_dc_0, f_dc_1, f_dc_2; // the spherical harmonics of the splat with the diffuse colour
+	float opacity; // the opacity of the splat
+	float scale_0, scale_1, scale_2; // the scale of the splat
+	float rot_0, rot_1, rot_2, rot_3; // the rotation of the splat
 
-
-
-#ifndef DISS_SPLATS_H
-#define DISS_SPLATS_H
-
-
-class Splats
-{
-    public:
-        //constructor with file path
-        Splats(const std::string &filePath, int width, int height);
-        //destructor
-        ~Splats();
-
-        //function to load the vectors to the GPU
-        void loadToGPU(int width, int height);
-
-        //function to load the shaders
-        void loadShaders();
-
-        //function to sort the splats
-        void sort();
-
-        //function to compute the bins of the splats
-        void computeBins();
-
-        //function to draw the splats
-        void draw(int width, int height, float tileWidth, float tileHeight);
-
-        //function to display the splats
-        void display();
-
-        int numSplats{};
-        int numDuplicates{};
-        std::vector<glm::vec4> means3D;
-        std::vector<glm::vec4> colours;
-        std::vector<float> sphericalHarmonics;
-        std::vector<float> opacities;
-        std::vector<glm::vec3> scales;
-        std::vector<glm::vec4> rotations;
-        std::vector<float> covarianceMatrices;
-
-
-
-    private:
-        //function to load splats from file
-        void loadSplats(const std::string& filePath);
-
-        void preprocess(glm::mat4 viewMatrix, int width, int height, float focal_x, float focal_y, float tan_fov_x,
-                        float tan_fov_y, glm::mat4 vpMatrix);
-
-        //function to compute the 3D covariance matrix
-        void computeCovarianceMatrices();
-        static glm::mat3x3 computeCovarianceMatrix(glm::vec3 scale, glm::vec4 rotation);
-        //function to return the result of alpha blending two colours
-        static glm::vec4 alphaBlend(glm::vec4 colour1, glm::vec4 colour2);
-
-
-
-
-
-        //GPU buffers
-        GLuint means3DBuffer{};
-        GLuint coloursBuffer{};
-        GLuint opacitiesBuffer{};
-        GLuint CovarianceBuffer{};
-        GLuint projectedMeansBuffer{};
-        GLuint projectedCovarianceBuffer{};
-        GLuint indexBuffer{};
-        GLuint intermediateBuffer{};
-        GLuint histogramBuffer{};
-        GLuint binsBuffer{};
-
-        GLuint depthBuffer{};
-        GLuint numDupedBuffer{};
-        GLuint splatKeysBuffer{};
-
-
-        //shaders
-        GLuint preProcessProgram{};
-        GLuint sortProgram{};
-        GLuint histogramProgram{};
-        GLuint prefixSumProgram{};
-        GLuint drawProgram{};
-        GLuint binProgram{};
-        GLuint binPrefixSumProgram{};
-
-        //stuff for displaying
-        GLuint vao{};
-        GLuint vbo{};
-        GLuint displayProgram{};
-        GLuint texture{};
-
-    //Debug functions
-public:
-
-
-    void cpuRender(glm::mat4 viewMatrix, int width, int height, float focal_x, float focal_y, float tan_fov_x,
-                   float tan_fov_y, glm::mat4 vpMatrix);
-    void gpuRender(glm::mat4 viewMatrix, int width, int height, float focal_x, float focal_y, float tan_fov_x,
-                   float tan_fov_y, glm::mat4 vpMatrix);
+	PCL_MAKE_ALIGNED_OPERATOR_NEW
 };
 
+// Register the custom point type with PCL
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+	GaussianData,
+	(float, x, x) (float, y, y) (float, z, z)
+	(float, nx, nx) (float, ny, ny) (float, nz, nz)
+	(float, f_dc_0, f_dc_0) (float, f_dc_1, f_dc_1) (float, f_dc_2, f_dc_2)
+	(float, opacity, opacity)
+	(float, scale_0, scale_0) (float, scale_1, scale_1) (float, scale_2, scale_2)
+	(float, rot_0, rot_0) (float, rot_1, rot_1) (float, rot_2, rot_2) (float, rot_3, rot_3)
+);
 
-#endif //DISS_SPLATS_H
+
+inline glm::vec4 normalizeRotation(glm::vec4& rot) {
+	float sumOfSqaures = rot.x * rot.x + rot.y * rot.y + rot.z * rot.z + rot.w * rot.w;
+	float normalizedVal = std::sqrt(sumOfSqaures);
+	return glm::vec4(rot.x / normalizedVal, rot.y / normalizedVal, rot.z / normalizedVal, rot.w / normalizedVal);
+};
+
+inline float sigmoid(float opacity) {
+	return 1.0 / (1.0 + std::exp(-opacity));
+};
+
+inline glm::vec3 SH2RGB(const glm::vec3& color) {
+	return 0.5f + C0 * color;
+};

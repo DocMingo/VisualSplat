@@ -1,2 +1,2 @@
 # hyper render engine
-7/20 实现渲染基本框架
+基于pcl基类拓展的高斯椭球类型进行渲染

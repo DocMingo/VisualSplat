@@ -24,6 +24,12 @@
     <ClCompile Include="include\learnopengl\shader_m.h">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="include\Splats.h">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Splats.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
@@ -42,6 +48,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\learnopengl\camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils.cpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
