@@ -144,8 +144,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
-    <None Include="src\resources\shader\2.2.basic_lighting.fs" />
-    <None Include="src\resources\shader\2.2.basic_lighting.vs" />
+    <None Include="src\resources\shader\fragment_shader.glsl" />
+    <None Include="src\resources\shader\vertex_shader.glsl" />
     <None Include="src\resources\shader\2.2.light_cube.fs" />
     <None Include="src\resources\shader\2.2.light_cube.vs" />
     <None Include="src\resources\shader\camera.fs" />
@@ -153,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\learnopengl\camera.h" />
+    <ClInclude Include="include\shader_m.h" />
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\stb_image_write.h" />
     <ClInclude Include="src\utils.cpp" />

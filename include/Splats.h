@@ -28,6 +28,8 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
 	(float, rot_0, rot_0) (float, rot_1, rot_1) (float, rot_2, rot_2) (float, rot_3, rot_3)
 );
 
+using GScloud = pcl::PointCloud<GaussianData>;
+using GScloudPtr = GScloud::Ptr;
 
 inline glm::vec4 normalizeRotation(glm::vec4& rot) {
 	float sumOfSqaures = rot.x * rot.x + rot.y * rot.y + rot.z * rot.z + rot.w * rot.w;
@@ -41,4 +43,30 @@ inline float sigmoid(float opacity) {
 
 inline glm::vec3 SH2RGB(const glm::vec3& color) {
 	return 0.5f + C0 * color;
+};
+
+std::vector<int> sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat) {
+	std::vector<std::pair<float, int>> depthIndex;
+	size_t count = 0;
+	for (const auto& point : splatCloud->points) {
+
+		const glm::vec3 xyz = glm::vec3(point.x, point.y, point.z);
+		glm::vec3 xyzView = viewMat * xyz;
+
+		float depth = xyzView.z;
+
+		depthIndex.emplace_back(depth, static_cast<int>(count));
+		++count;
+	}
+
+	std::sort(depthIndex.begin(), depthIndex.end(), [](const std::pair<float, int>& a, const std::pair<float, int>& b) {
+		return a.first < b.first;
+		});
+
+	std::vector<int> sortedIndices;
+	sortedIndices.reserve(depthIndex.size());
+	for (const auto& pair : depthIndex) {
+		sortedIndices.push_back(pair.second);
+	}
+	return sortedIndices;
 };
