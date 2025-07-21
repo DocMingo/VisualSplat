@@ -137,7 +137,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="G:\pointcloudrendering\Glad\src\glad.c" />
-    <ClCompile Include="include\learnopengl\shader_m.h" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="include\Splats.h" />
     <ClCompile Include="src\Splats.cpp" />
@@ -156,6 +155,7 @@
     <ClInclude Include="include\shader_m.h" />
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\stb_image_write.h" />
+    <ClInclude Include="include\utils.h" />
     <ClInclude Include="src\utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

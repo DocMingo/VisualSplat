@@ -1,9 +1,8 @@
+#pragma once
+
 #include<pcl/point_types.h>
 #include<pcl/point_cloud.h>
 #include<string>
-#include<glm/glm.hpp>
-
-const float C0 = 0.28209479177387814f;
 
 struct GaussianData {
 	PCL_ADD_POINT4D; // property float x y z; the mean of the splat
@@ -17,7 +16,6 @@ struct GaussianData {
 	PCL_MAKE_ALIGNED_OPERATOR_NEW
 };
 
-// Register the custom point type with PCL
 POINT_CLOUD_REGISTER_POINT_STRUCT(
 	GaussianData,
 	(float, x, x) (float, y, y) (float, z, z)
@@ -26,47 +24,10 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
 	(float, opacity, opacity)
 	(float, scale_0, scale_0) (float, scale_1, scale_1) (float, scale_2, scale_2)
 	(float, rot_0, rot_0) (float, rot_1, rot_1) (float, rot_2, rot_2) (float, rot_3, rot_3)
-);
+)
 
 using GScloud = pcl::PointCloud<GaussianData>;
 using GScloudPtr = GScloud::Ptr;
 
-inline glm::vec4 normalizeRotation(glm::vec4& rot) {
-	float sumOfSqaures = rot.x * rot.x + rot.y * rot.y + rot.z * rot.z + rot.w * rot.w;
-	float normalizedVal = std::sqrt(sumOfSqaures);
-	return glm::vec4(rot.x / normalizedVal, rot.y / normalizedVal, rot.z / normalizedVal, rot.w / normalizedVal);
-};
 
-inline float sigmoid(float opacity) {
-	return 1.0 / (1.0 + std::exp(-opacity));
-};
 
-inline glm::vec3 SH2RGB(const glm::vec3& color) {
-	return 0.5f + C0 * color;
-};
-
-std::vector<int> sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat) {
-	std::vector<std::pair<float, int>> depthIndex;
-	size_t count = 0;
-	for (const auto& point : splatCloud->points) {
-
-		const glm::vec3 xyz = glm::vec3(point.x, point.y, point.z);
-		glm::vec3 xyzView = viewMat * xyz;
-
-		float depth = xyzView.z;
-
-		depthIndex.emplace_back(depth, static_cast<int>(count));
-		++count;
-	}
-
-	std::sort(depthIndex.begin(), depthIndex.end(), [](const std::pair<float, int>& a, const std::pair<float, int>& b) {
-		return a.first < b.first;
-		});
-
-	std::vector<int> sortedIndices;
-	sortedIndices.reserve(depthIndex.size());
-	for (const auto& pair : depthIndex) {
-		sortedIndices.push_back(pair.second);
-	}
-	return sortedIndices;
-};
