@@ -18,7 +18,6 @@ inline glm::vec3 SH2RGB(const glm::vec3& color) {
 	return 0.5f + C0 * color;
 };
 
-
-std::vector<float> sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat);
+std::vector<int> m_sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat);
 
 

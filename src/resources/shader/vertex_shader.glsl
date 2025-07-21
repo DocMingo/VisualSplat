@@ -12,7 +12,8 @@ layout(location = 0) in vec2 quadPosition;
 #define SH_DIM       3   // 球谐维度
 
 // 高斯索引排列缓存（排序后的渲染顺序）
-layout(std430, binding = 1) buffer gaussians_order {
+// std430表示内存对其鬼册是按照4字节vec4对其规则排布
+layout(std430, binding = 1) buffer gaussians_order { 
     int sortedGaussianIdx[];
 };
 
@@ -94,6 +95,18 @@ void main() {
     pos2d.xyz /= pos2d.w;
     pos2d.w = 1.0;
 
+    vec2 wh = 2 * hfov_focal.xy * hfov_focal.z;
+
+    // Set limits to avoid extreme perspective distortion & contrain effects of outliers
+    float limx = 1.3 * hfov_focal.x;
+    float limy = 1.3 * hfov_focal.y;
+
+    float txtz = cam.x / cam.z;
+    float tytz = cam.y / cam.z;
+
+    // Clamped versions of txtz and tytz 
+    float tx = min(limx, max(-limx, txtz)) * cam.z;
+    float ty = min(limy, max(-limy, tytz)) * cam.z;
     // 4. 设置近平面约束，裁剪太远或太偏的高斯点
     if (any(greaterThan(abs(pos2d.xyz), vec3(1.3)))) {
         gl_Position = vec4(-100.0, -100.0, -100.0, 1.0);

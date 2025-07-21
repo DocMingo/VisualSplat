@@ -30,7 +30,7 @@ float znear = 0.01f;
 float zfar = 100.f;
 
 // camera
-Camera camera(glm::vec3(9040.0f, 392.0f, 54.0f)); // 或稍远一点
+Camera camera(glm::vec3(0.0f, 0.0f, 0.0f)); // 或稍远一点
 
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -56,24 +56,26 @@ GLuint quad_f[] = {
 	0, 2, 3
 };
 
-GLuint setupSSBO(const GLuint& bindIdx, const std::vector<float>& bufferData) {
+template<class T>
+GLuint setupSSBO(const GLuint& bindIdx, const std::vector<T>& bufferData) {
 	GLuint ssbo;
 	// Generate SSBO
 	glGenBuffers(1, &ssbo);
 	// Bind ssbo to GL_SHADER_STORAGE_BUFFER
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
 	// Populate GL_SHADER_STORAGE_BUFFER with our data
-	glBufferData(GL_SHADER_STORAGE_BUFFER, bufferData.size() * sizeof(int), bufferData.data(), GL_STATIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, bufferData.size() * sizeof(std::decay_t<T>), bufferData.data(), GL_STATIC_DRAW);
 	// Specify the index of the binding (bindIdx)
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindIdx, ssbo);
+	// glBindBufferBase 不仅绑定缓冲区，还显式关联到 Shader 中的 binding = bindIdx。
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindIdx, ssbo); // 将ssbo绑定到 GL_SHADER_STORAGE_BUFFER 的第bindIdx号的 binding point上，后面在着色器程序中使用binding = 1即可使用
 	// Unbind ssbo to GL_SHADER_STORAGE_BUFFER
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // 接触全局绑定是使用 如果目的是“解绑定”，应该绑定 0 而非 ssbo
 
 	return ssbo;
 };
 
 
-int main1() {
+int main() {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -82,21 +84,23 @@ int main1() {
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Gaussian Renderer", NULL, NULL);
 	if (!window) { std::cerr << "Failed to create GLFW window\n"; return -1; }
 	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); // 窗口大小修改回调
+	glfwSetCursorPosCallback(window, mouse_callback); // 鼠标光标移动回调
+	glfwSetScrollCallback(window, scroll_callback);  // 鼠标滚轮滚动事件的回调函数
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // TODO: 增加鼠标按下按钮回调
 
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+	/*初始化glad*/
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) { 
 		std::cerr << "Failed to initialize GLAD\n"; return -1;
 	}
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	spdlog::info("初始化成功, 开始加载着色器");
+	spdlog::info("初始化成功, 创建着色器 start");
 	Shader this_shader("src/resources/shader/vertex_shader.glsl", "src/resources/shader/fragment_shader.glsl");
 
+	spdlog::info("着色器创建成功，开始读取高斯数据");
 	GScloudPtr Gaussian_cloud(new pcl::PointCloud<GaussianData>);
 	pcl::io::loadPLYFile<GaussianData>("Z:/非结构化数据/高斯模型/输电/m77_绝缘子.ply", *Gaussian_cloud);
 	int numInstances = Gaussian_cloud->points.size();
@@ -107,6 +111,7 @@ int main1() {
 	flat_gaussian_data.reserve(numInstances * 14);
 	for (const auto& point : Gaussian_cloud->points) {
 		// glm::vec4 tempRots = glm::vec4(point.rot_0, point.rot_1, point.rot_2, point.rot_3);
+		// 对旋转值四元数进行归一化，以确保四元数的幅值为1
 		glm::vec4 normRot = normalizeRotation(glm::vec4(point.rot_0, point.rot_1, point.rot_2, point.rot_3));
 		glm::vec3 RGB = SH2RGB(glm::vec3(point.f_dc_0, point.f_dc_1, point.f_dc_2));
 		flat_gaussian_data.insert(flat_gaussian_data.end(), {
@@ -122,18 +127,23 @@ int main1() {
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
+
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_v), quad_v, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_f), quad_f, GL_STATIC_DRAW);
-	glVertexAttribPointer(glGetAttribLocation(this_shader.ID, "quadPosition"), 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-	glEnableVertexAttribArray(0);
-	glBindVertexArray(0);
+	GLint quad_position = glGetAttribLocation(this_shader.ID, "quadPosition");
+	glVertexAttribPointer(quad_position, 2, GL_FLOAT, GL_FALSE, 0, (void*)0); // 从着色器程序中获取quadPosition的位置
+	glEnableVertexAttribArray(quad_position);
 
-	GLuint pointsBindIdx = 1;
-	GLuint sortedBindIdx = 2;
-	GLuint ssbo1 = setupSSBO(pointsBindIdx, flat_gaussian_data);
+	// Unbind VBO and EBO
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	GLuint pointsBindIdx = 2;
+	GLuint sortedBindIdx = 1;
+	GLuint ssbo1 = setupSSBO(pointsBindIdx, flat_gaussian_data); // 将SSBO绑定到binding = 2
 	GLuint ssbo2 = 0;
 
 	float htany = tan(glm::radians(fov) / 2);
@@ -146,18 +156,20 @@ int main1() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 projection = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, znear, zfar);
+		glm::mat4 projection = glm::mat4(1.0f);
+		projection = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, znear, zfar);
 		glm::mat4 viewMat = camera.GetViewMatrix();
 
 		glDeleteBuffers(1, &ssbo2);
-		// std::vector<float> gausIdx = VS::sortGaussians(Gaussian_cloud, glm::mat3(viewMat));
-		// ssbo2 = setupSSBO(sortedBindIdx, gausIdx);
+		std::vector<int> gausIdx = m_sortGaussians(Gaussian_cloud, glm::mat3(viewMat));
+		ssbo2 = setupSSBO<int>(sortedBindIdx, gausIdx);
 
 		this_shader.use();
-		glUniformMatrix4fv(glGetUniformLocation(this_shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(viewMat));
-		glUniformMatrix4fv(glGetUniformLocation(this_shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-		glUniform3f(glGetUniformLocation(this_shader.ID, "hfov_focal"), hfov_focal.x, hfov_focal.y, hfov_focal.z);
-
+		this_shader.setMat4("projection", projection);
+		this_shader.setVec3("hfov_focal", hfov_focal);
+		this_shader.setMat4("view", viewMat);
+		
+		/* 绑定VAO并进行实例绘制*/
 		glBindVertexArray(VAO);
 		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, numInstances);
 		glBindVertexArray(0);
@@ -178,11 +190,13 @@ int main1() {
 	return 0;
 }
 
-int main() {
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+int main1() {
+	{
+		glfwInit();
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	}
 
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Gaussian Renderer", NULL, NULL);
 	if (!window) { std::cerr << "Failed to create GLFW window\n"; return -1; }
@@ -196,8 +210,8 @@ int main() {
 		std::cerr << "Failed to initialize GLAD\n"; return -1;
 	}
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND); // 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // 启用alpha混合
 
 	spdlog::info("初始化成功, 开始加载着色器");
 	Shader this_shader("src/resources/shader/vertex_shader.glsl", "src/resources/shader/fragment_shader.glsl");

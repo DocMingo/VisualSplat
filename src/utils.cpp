@@ -1,8 +1,11 @@
-#include<spdlog/spdlog.h>
 #include<glm/glm.hpp>
 #include<utils.h>
 
 using namespace std;
+
+std::vector<int> m_sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat) {
+
+}
 
 std::vector<float> sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat) {
 	std::vector<std::pair<float, int>> depthIndex;

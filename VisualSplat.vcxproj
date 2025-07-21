@@ -139,7 +139,6 @@
     <ClCompile Include="G:\pointcloudrendering\Glad\src\glad.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="include\Splats.h" />
-    <ClCompile Include="src\Splats.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
