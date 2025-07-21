@@ -77,8 +77,8 @@ int main()
 
     // build and compile our shader zprogram
     // ------------------------------------
-    Shader lightingShader("resources/shader/2.2.basic_lighting.vs", "resources/shader/2.2.basic_lighting.fs");
-    Shader lightCubeShader("resources/shader/2.2.light_cube.vs", "resources/shader/2.2.light_cube.fs");
+    Shader lightingShader("src/resources/shader/2.2.basic_lighting.vs", "src/resources/shader/2.2.basic_lighting.fs");
+    Shader lightCubeShader("src/resources/shader/2.2.light_cube.vs", "src/resources/shader/2.2.light_cube.fs");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -127,11 +127,11 @@ int main()
     };
     // first, configure the cube's VAO (and VBO)
     unsigned int VBO, cubeVAO;
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &VBO);
+    glGenVertexArrays(1, &cubeVAO); // 创建一个顶点array对象，将id存储在cubeVAO地址中
+    glGenBuffers(1, &VBO); // 创建一个数据缓存对象，将id存储在VBO地址中
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO); // 2. 绑定 VBO 为当前 GL_ARRAY_BUFFER
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // 3. 把数据传给显卡
 
     glBindVertexArray(cubeVAO);
 
