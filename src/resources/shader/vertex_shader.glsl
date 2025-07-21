@@ -114,9 +114,6 @@ void main() {
     }
 
     // 5. 计算雅可比矩阵并近似投影变换
-    vec2 wh = 2.0 * hfov_focal.xy * hfov_focal.z;
-    float tx = clamp(cam.x / cam.z, -1.3 * hfov_focal.x, 1.3 * hfov_focal.x) * cam.z;
-    float ty = clamp(cam.y / cam.z, -1.3 * hfov_focal.y, 1.3 * hfov_focal.y) * cam.z;
 
     mat3 J = mat3(
         hfov_focal.z / cam.z, 0.0, -(hfov_focal.z * tx) / (cam.z * cam.z),
@@ -125,7 +122,7 @@ void main() {
     );
 
     mat3 T = transpose(mat3(view)) * J;
-    mat3 cov2dMat = transpose(T) * cov3d * T;
+    mat3 cov2dMat = transpose(T) * transpose(cov3d) * T;
 
     // 6. 添加数值稳定项
     cov2dMat[0][0] += 0.3;
@@ -156,5 +153,6 @@ void main() {
     // 10. 传值给片段着色器
     coordxy = quadPosition * quadwh_scr;
     outColor = colorVal;
+    // outColor = vec3(1.0f, 0.0f, 0.0f); // 强制输出红色
     opacity = gData[start + OPACITY_IDX];
 }

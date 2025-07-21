@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include<iostream>
+
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
     FORWARD,
@@ -68,7 +70,15 @@ public:
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(Camera_Movement direction, float deltaTime)
     {
+        using namespace std;
         float velocity = MovementSpeed * deltaTime;
+        // float velocity = MovementSpeed;
+        
+        cout << "MovementSpeed:" << MovementSpeed << endl;
+        cout << "deltaTime:" << deltaTime << endl;
+        cout << "velocity:" << velocity << endl;
+        cout << "Position" << Position.x << "," << Position.y << "," << Position.z << endl;
+
         if (direction == FORWARD)
             Position += Front * velocity;
         if (direction == BACKWARD)

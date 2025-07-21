@@ -13,6 +13,7 @@
 #include<spdlog/spdlog.h>
 #include<learnopengl/camera.h>
 #include<learnopengl/shader_m.h>
+#include<fmt/format.h>
 // #include<dmyDependence/dmyTool.h>
 
 using namespace std;
@@ -29,8 +30,7 @@ float fov = 90.0f;
 float znear = 0.01f;
 float zfar = 100.f;
 
-// camera
-Camera camera(glm::vec3(0.0f, 0.0f, 0.0f)); // 或稍远一点
+Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
 
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -74,6 +74,12 @@ GLuint setupSSBO(const GLuint& bindIdx, const std::vector<T>& bufferData) {
 	return ssbo;
 };
 
+template<typename T>
+void updateSSBO(GLuint ssbo, const std::vector<T>& data) {
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, data.size() * sizeof(T), data.data());
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
 
 int main() {
 	glfwInit();
@@ -81,7 +87,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Gaussian Renderer", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "glad Gaussian Renderer", NULL, NULL);
 	if (!window) { std::cerr << "Failed to create GLFW window\n"; return -1; }
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); // 窗口大小修改回调
@@ -102,10 +108,16 @@ int main() {
 
 	spdlog::info("着色器创建成功，开始读取高斯数据");
 	GScloudPtr Gaussian_cloud(new pcl::PointCloud<GaussianData>);
-	pcl::io::loadPLYFile<GaussianData>("Z:/非结构化数据/高斯模型/输电/m77_绝缘子.ply", *Gaussian_cloud);
+	auto ret_value = pcl::io::loadPLYFile<GaussianData>("Z:/非结构化数据/高斯模型/输电/m76_点云同步.ply", *Gaussian_cloud);
 	int numInstances = Gaussian_cloud->points.size();
-	cout << "高斯初始化成功, 点数为" << numInstances << endl;
-	std::cout << "Sample point: " << Gaussian_cloud->points[0].x << ", " << Gaussian_cloud->points[0].y << Gaussian_cloud->points[0].z << std::endl;
+	if (!ret_value) {
+		cout << "高斯初始化成功, 点数为" << numInstances << endl;
+		std::cout << "Sample point: " << Gaussian_cloud->points[0].x << ", " << Gaussian_cloud->points[0].y << Gaussian_cloud->points[0].z << std::endl;
+	}
+	// 初始化 相机位移参数
+	// camera
+	camera.Position = glm::vec3(Gaussian_cloud->points[0].x, Gaussian_cloud->points[0].y, Gaussian_cloud->points[0].z); // 使用gaussian椭球的第一个点作为相机位姿
+	// camera.MovementSpeed = 900.0f;
 
 	std::vector<float> flat_gaussian_data;
 	flat_gaussian_data.reserve(numInstances * 14);
@@ -123,6 +135,18 @@ int main() {
 			});
 	}
 
+	cout << fmt::format("flat_gaussian_data : {}, {}, {}, {}, {}, {}, {}, {}, {}",
+		flat_gaussian_data[0],
+		flat_gaussian_data[1],
+		flat_gaussian_data[2],
+		flat_gaussian_data[3],
+		flat_gaussian_data[4],
+		flat_gaussian_data[5],
+		flat_gaussian_data[6],
+		flat_gaussian_data[7],
+		flat_gaussian_data[8]
+	);
+
 	unsigned int VAO, VBO, EBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -138,13 +162,16 @@ int main() {
 	glEnableVertexAttribArray(quad_position);
 
 	// Unbind VBO and EBO
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0); // 解绑VBO
+	glBindVertexArray(0);
+	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // 绝不能解绑，必须绑定在 VAO 上
 
 	GLuint pointsBindIdx = 2;
 	GLuint sortedBindIdx = 1;
 	GLuint ssbo1 = setupSSBO(pointsBindIdx, flat_gaussian_data); // 将SSBO绑定到binding = 2
-	GLuint ssbo2 = 0;
+	glm::mat4 viewMat_init = camera.GetViewMatrix();
+	std::vector<int> gausIdx = sortGaussians(Gaussian_cloud, glm::mat3(viewMat_init));
+	GLuint ssbo2 = setupSSBO<int>(sortedBindIdx, gausIdx);
 
 	float htany = tan(glm::radians(fov) / 2);
 	float htanx = htany * SCR_WIDTH / SCR_HEIGHT;
@@ -152,17 +179,25 @@ int main() {
 	glm::vec3 hfov_focal(htanx, htany, focal_z);
 
 	while (!glfwWindowShouldClose(window)) {
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		processInput(window);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, znear, zfar);
 		glm::mat4 viewMat = camera.GetViewMatrix();
+		// cout << fmt::format("camera.Position: {},{},{}\n", camera.Position.x, camera.Position.y, camera.Position.z);
+		// view = glm::lookAt(cameraPos, cameraPos + cameraDirection, cameraUp);
 
-		glDeleteBuffers(1, &ssbo2);
-		std::vector<int> gausIdx = m_sortGaussians(Gaussian_cloud, glm::mat3(viewMat));
-		ssbo2 = setupSSBO<int>(sortedBindIdx, gausIdx);
+		std::vector<int> gausIdx = sortGaussians(Gaussian_cloud, glm::mat3(viewMat));
+		// cout << fmt::format("gausIdx: {},{},{}\n", gausIdx.at(0), gausIdx.at(1), gausIdx.at(2));
+		updateSSBO<int>(ssbo2, gausIdx); // 使用封装的 update 函数更新 每次将索引数据重新加载进去
+
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 view = camera.GetViewMatrix();
+		// projection = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, znear, zfar);
 
 		this_shader.use();
 		this_shader.setMat4("projection", projection);
@@ -171,8 +206,9 @@ int main() {
 		
 		/* 绑定VAO并进行实例绘制*/
 		glBindVertexArray(VAO);
-		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, numInstances);
-		glBindVertexArray(0);
+		// glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, numInstances);
+		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0, numInstances); // 绘制全部高斯点
+		glBindVertexArray(0); // 将VAO解绑
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -188,55 +224,6 @@ int main() {
 	glfwTerminate();
 
 	return 0;
-}
-
-int main1() {
-	{
-		glfwInit();
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	}
-
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Gaussian Renderer", NULL, NULL);
-	if (!window) { std::cerr << "Failed to create GLFW window\n"; return -1; }
-	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		std::cerr << "Failed to initialize GLAD\n"; return -1;
-	}
-
-	glEnable(GL_BLEND); // 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // 启用alpha混合
-
-	spdlog::info("初始化成功, 开始加载着色器");
-	Shader this_shader("src/resources/shader/vertex_shader.glsl", "src/resources/shader/fragment_shader.glsl");
-
-	GScloudPtr Gaussian_cloud(new pcl::PointCloud<GaussianData>);
-	pcl::io::loadPLYFile<GaussianData>("Z:/非结构化数据/高斯模型/输电/m77_绝缘子.ply", *Gaussian_cloud);
-	int numInstances = Gaussian_cloud->points.size();
-	cout << "高斯初始化成功, 点数为" << numInstances << endl;
-	std::cout << "Sample point: " << Gaussian_cloud->points[0].x << ", " << Gaussian_cloud->points[0].y << Gaussian_cloud->points[0].z << std::endl;
-
-	std::vector<float> flat_gaussian_data;
-	flat_gaussian_data.reserve(numInstances * 14);
-	for (const auto& point : Gaussian_cloud->points) {
-		// glm::vec4 tempRots = glm::vec4(point.rot_0, point.rot_1, point.rot_2, point.rot_3);
-		glm::vec4 normRot = normalizeRotation(glm::vec4(point.rot_0, point.rot_1, point.rot_2, point.rot_3));
-		glm::vec3 RGB = SH2RGB(glm::vec3(point.f_dc_0, point.f_dc_1, point.f_dc_2));
-		flat_gaussian_data.insert(flat_gaussian_data.end(), {
-			point.x, point.y, point.z,
-			normRot.x, normRot.y, normRot.z, normRot.w,
-			glm::exp(point.scale_0), glm::exp(point.scale_1), glm::exp(point.scale_2),
-			sigmoid(point.opacity),
-			RGB.x, RGB.y, RGB.z
-			});
-	}
-	cout << "读取成功" << endl;
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly

@@ -3,11 +3,7 @@
 
 using namespace std;
 
-std::vector<int> m_sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat) {
-
-}
-
-std::vector<float> sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat) {
+std::vector<int> sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat) {
 	std::vector<std::pair<float, int>> depthIndex;
 	size_t count = 0;
 	for (const auto& point : splatCloud->points) {
@@ -25,7 +21,7 @@ std::vector<float> sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat
 		return a.first < b.first;
 		});
 
-	std::vector<float> sortedIndices;
+	std::vector<int> sortedIndices;
 	sortedIndices.reserve(depthIndex.size());
 	for (const auto& pair : depthIndex) {
 		sortedIndices.push_back(pair.second);
