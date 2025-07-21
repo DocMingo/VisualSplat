@@ -12,7 +12,9 @@ enum Camera_Movement {
     FORWARD,
     BACKWARD,
     LEFT,
-    RIGHT
+    RIGHT,
+    ROTATION_0,
+    ROTATION_1
 };
 
 // Default camera values
@@ -46,6 +48,7 @@ public:
     {
         Position = position;
         WorldUp = up;
+        // glm::vec3 worldUp = glm::vec3(0.0f, 0.0f, 1.0f); // Z ÷·œÚ…œ
         Yaw = yaw;
         Pitch = pitch;
         updateCameraVectors();
@@ -87,6 +90,16 @@ public:
             Position -= Right * velocity;
         if (direction == RIGHT)
             Position += Right * velocity;
+        if (direction == ROTATION_0) {
+            // Yaw += velocity;
+            glm::mat3 rotationMat = glm::rotate(glm::mat4(1.0f), glm::radians(50.0f ), glm::vec3(0, 1, 0));
+            Front = glm::normalize(rotationMat * Front);
+            // updateCameraVectors();
+        }
+
+        if (direction == ROTATION_1) {
+
+        }
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.

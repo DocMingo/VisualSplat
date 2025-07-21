@@ -108,7 +108,7 @@ int main() {
 
 	spdlog::info("着色器创建成功，开始读取高斯数据");
 	GScloudPtr Gaussian_cloud(new pcl::PointCloud<GaussianData>);
-	auto ret_value = pcl::io::loadPLYFile<GaussianData>("Z:/非结构化数据/高斯模型/输电/m76_点云同步.ply", *Gaussian_cloud);
+	auto ret_value = pcl::io::loadPLYFile<GaussianData>(R"(Z:/非结构化数据/高斯模型/输电/m77杆塔.ply)", *Gaussian_cloud);
 	int numInstances = Gaussian_cloud->points.size();
 	if (!ret_value) {
 		cout << "高斯初始化成功, 点数为" << numInstances << endl;
@@ -241,6 +241,10 @@ void processInput(GLFWwindow* window)
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		camera.ProcessKeyboard(ROTATION_0, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		camera.ProcessKeyboard(ROTATION_1, deltaTime);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
