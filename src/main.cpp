@@ -1,5 +1,4 @@
-/* 4.6.0£¨NVIDIA 560.94£©*/
-#include <glad/glad.h> 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "Splats.h"
@@ -26,15 +25,12 @@ int main()
     //make window current context
     glfwMakeContextCurrent(window);
 
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+    //initialise glew
+    if (glewInit() != GLEW_OK) {
+        std::cerr << "Failed to initialise GLEW" << std::endl;
+        glfwTerminate();
         return -1;
     }
-
-    // glad_glDispatchCompute(1, 1, 1);
     //initialise timer stuff
     GLuint timerQuery;
     glGenQueries(1, &timerQuery);
