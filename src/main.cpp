@@ -108,7 +108,7 @@ int main() {
 
 	spdlog::info("着色器创建成功，开始读取高斯数据");
 	GScloudPtr Gaussian_cloud(new pcl::PointCloud<GaussianData>);
-	auto ret_value = pcl::io::loadPLYFile<GaussianData>(R"(Z:/非结构化数据/高斯模型/输电/m77杆塔.ply)", *Gaussian_cloud);
+	auto ret_value = pcl::io::loadPLYFile<GaussianData>(R"(Z:/非结构化数据/高斯模型/输电/单杆-临近变电站.ply)", *Gaussian_cloud);
 	int numInstances = Gaussian_cloud->points.size();
 	if (!ret_value) {
 		cout << "高斯初始化成功, 点数为" << numInstances << endl;
@@ -135,6 +135,7 @@ int main() {
 			});
 	}
 
+	// 高斯单点打印
 	cout << fmt::format("flat_gaussian_data : {}, {}, {}, {}, {}, {}, {}, {}, {}",
 		flat_gaussian_data[0],
 		flat_gaussian_data[1],
@@ -182,6 +183,7 @@ int main() {
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+		// cout << "渲染一个循环： " << deltaTime << "s" << endl;
 
 		processInput(window);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
