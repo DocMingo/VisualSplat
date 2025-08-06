@@ -71,6 +71,7 @@
     <Import Project="..\props\OpenGL.props" />
     <Import Project="..\props\pclrelease.props" />
     <Import Project="..\props\Algorithm3d_Cpp.props" />
+    <Import Project="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\extras\visual_studio_integration\MSBuildExtensions\CUDA 12.4.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

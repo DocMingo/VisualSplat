@@ -21,13 +21,10 @@
     <ClCompile Include="G:\pointcloudrendering\Glad\src\glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="include\learnopengl\shader_m.h">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="include\Splats.h">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Splats.cpp">
+    <ClCompile Include="src\utils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,10 +32,10 @@
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
     <None Include="src\resources\shader\camera.vs" />
     <None Include="src\resources\shader\camera.fs" />
-    <None Include="src\resources\shader\2.2.basic_lighting.vs" />
-    <None Include="src\resources\shader\2.2.basic_lighting.fs" />
     <None Include="src\resources\shader\2.2.light_cube.vs" />
     <None Include="src\resources\shader\2.2.light_cube.fs" />
+    <None Include="src\resources\shader\fragment_shader.glsl" />
+    <None Include="src\resources\shader\vertex_shader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stb_image.h">
@@ -50,7 +47,10 @@
     <ClInclude Include="include\learnopengl\camera.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils.cpp">
+    <ClInclude Include="include\shader_m.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

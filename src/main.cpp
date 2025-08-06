@@ -16,6 +16,15 @@
 #include<fmt/format.h>
 // #include<dmyDependence/dmyTool.h>
 
+#include "cudaGL.h"
+#include <cuda_runtime.h>
+#include<device_launch_parameters.h>
+
+__global__ void helloworld_from_gpu(void) {
+	printf("Hello world from GPU\n");
+	return;
+}
+
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -82,6 +91,18 @@ void updateSSBO(GLuint ssbo, const std::vector<T>& data) {
 }
 
 int main() {
+	/* === add cuda support ===*/
+	int deviceCount{};
+	cudaError_t error = cudaGetDeviceCount(&deviceCount);
+
+	if (error != cudaSuccess) {
+		cerr << "CUDA error: " << cudaGetErrorString(error) << endl;
+		exit(-1);
+	}
+
+
+
+	/*=== Typical implementation by glfw + glad ===*/
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
