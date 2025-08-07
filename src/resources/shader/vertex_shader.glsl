@@ -9,7 +9,8 @@ layout(location = 0) in vec2 quadPosition;
 #define SCALE_IDX    7   // 缩放因子
 #define OPACITY_IDX 10   // 不透明度
 #define SH_IDX      11   // 球谐系数（这里只取前3个）
-#define SH_DIM       3   // 球谐维度
+// #define SH_DIM       3   // 球谐维度
+#define SH_DIM       16   // 球谐维度
 
 // 高斯索引排列缓存（排序后的渲染顺序）
 // std430表示内存对其鬼册是按照4字节vec4对其规则排布

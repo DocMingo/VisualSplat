@@ -3,6 +3,7 @@
 #include<chrono>
 #include <execution>
 #include<fmt/format.h>
+#include<chrono>
 
 using namespace std;
 
@@ -61,20 +62,20 @@ std::vector<int> sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat) 
 			depthIndex.emplace_back(xyzView.z, i);
 		}
 	}
-	printfmt("遍历点云 用时 {:.3f}s \n", now() - t_start);
+	// printfmt("遍历点云 用时 {:.3f}s \n", now() - t_start);
 	double t_sort_start = now();
 	// std::sort(depthIndex.begin(), depthIndex.end(), [](const std::pair<float, int>& a, const std::pair<float, int>& b) {
 	// 	return a.first < b.first;
 	// 	});
 	std::sort(std::execution::par, depthIndex.begin(), depthIndex.end());
-	printfmt("深度排序 用时 {:.3f}s \n", now() - t_sort_start);
+	// printfmt("深度排序 用时 {:.3f}s \n", now() - t_sort_start);
 	double t_sortedIndices_start = now();
 	std::vector<int> sortedIndices;
 	sortedIndices.reserve(depthIndex.size());
 	for (const auto& pair : depthIndex) {
 		sortedIndices.push_back(pair.second);
 	}
-	printfmt("插入索引用时 {:.3f}s \n", now() - t_sortedIndices_start);
+	// printfmt("插入索引用时 {:.3f}s \n", now() - t_sortedIndices_start);
 	return sortedIndices;
 };
 
