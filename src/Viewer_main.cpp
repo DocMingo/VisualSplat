@@ -100,8 +100,6 @@ int main() {
 		exit(-1);
 	}
 
-
-
 	/*=== Typical implementation by glfw + glad ===*/
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
