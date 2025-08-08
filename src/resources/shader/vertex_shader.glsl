@@ -10,7 +10,7 @@ layout(location = 0) in vec2 quadPosition;
 #define OPACITY_IDX 10   // 不透明度
 #define SH_IDX      11   // 球谐系数（这里只取前3个）
 // #define SH_DIM       3   // 球谐维度
-#define SH_DIM       16   // 球谐维度
+#define SH_DIM       3   // 球谐维度
 
 // 高斯索引排列缓存（排序后的渲染顺序）
 // std430表示内存对其鬼册是按照4字节vec4对其规则排布
@@ -42,7 +42,8 @@ vec4 get_vec4(int offset) {
     return vec4(gData[offset], gData[offset + 1], gData[offset + 2], gData[offset + 3]);
 }
 
-// 构建旋转-缩放矩阵对应的 3D 协方差矩阵
+// 构建旋转-缩放矩阵对应的 3D 协方差矩阵 
+// 保持某个固定方向的缩放，而旋转只是改变整体姿态。
 mat3 computeCov3D(vec4 rots, vec3 scales) {
     float scaleMod = 1.0f;
 
@@ -76,9 +77,39 @@ mat3 computeCov3D(vec4 rots, vec3 scales) {
     return transpose(mMat) * mMat; // 协方差矩阵 sigma
 }
 
+mat3 computeCov3D_rota(vec4 rots, vec3 scales) {
+    // 归一化四元数
+    rots = normalize(rots);
+
+    // 旋转矩阵
+    mat3 R = mat3(
+        1.0 - 2.0 * (rots.z * rots.z + rots.w * rots.w),
+        2.0 * (rots.y * rots.z + rots.x * rots.w),
+        2.0 * (rots.y * rots.w - rots.x * rots.z),
+
+        2.0 * (rots.y * rots.z - rots.x * rots.w),
+        1.0 - 2.0 * (rots.y * rots.y + rots.w * rots.w),
+        2.0 * (rots.z * rots.w + rots.x * rots.y),
+
+        2.0 * (rots.y * rots.w + rots.x * rots.z),
+        2.0 * (rots.z * rots.w - rots.x * rots.y),
+        1.0 - 2.0 * (rots.y * rots.y + rots.z * rots.z)
+    );
+
+    // 缩放矩阵
+    mat3 S = mat3(
+        scales.x, 0.0, 0.0,
+        0.0, scales.y, 0.0,
+        0.0, 0.0, scales.z
+    );
+
+    mat3 M = R * S;
+    return transpose(M) * M;
+}
+
 void main() {
     // 1. 获取当前实例对应的高斯数据起始索引
-    int quadId = sortedGaussianIdx[gl_InstanceID];
+    int quadId = sortedGaussianIdx[gl_InstanceID]; // GPU 在执行顶点着色器时，会引入gl_InstanceID变量，值是当前实例的编号，从0开始递增
     int total_dim = 3 + 4 + 3 + 1 + SH_DIM;
     int start = quadId * total_dim;
 
@@ -87,11 +118,19 @@ void main() {
     vec3 scale = get_vec3(start + SCALE_IDX);
     vec3 colorVal = get_vec3(start + SH_IDX);
 
+    vec4 cam = view * vec4(center, 1.0);
+    // 早期剔除：背面剔除
+    if (cam.z > 0.0) {
+        gl_Position = vec4(-100.0, -100.0, -100.0, 1.0);
+        return;
+    }
+
     // 2. 计算协方差矩阵
     mat3 cov3d = computeCov3D(rotation, scale);
+    // mat3 cov3d = computeCov3D_rota(rotation, scale);
 
     // 3. 应用视图变换和投影变换
-    vec4 cam = view * vec4(center, 1.0);
+
     vec4 pos2d = projection * cam;
     pos2d.xyz /= pos2d.w;
     pos2d.w = 1.0;

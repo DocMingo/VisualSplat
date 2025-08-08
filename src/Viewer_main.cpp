@@ -94,7 +94,6 @@ int main() {
 	/* === add cuda support ===*/
 	int deviceCount{};
 	cudaError_t error = cudaGetDeviceCount(&deviceCount);
-
 	if (error != cudaSuccess) {
 		cerr << "CUDA error: " << cudaGetErrorString(error) << endl;
 		exit(-1);
@@ -123,12 +122,12 @@ int main() {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	spdlog::info("初始化成功, 创建着色器 start");
-	// Shader this_shader("src/resources/shader/vertex_shader.glsl", "src/resources/shader/fragment_shader.glsl");
-	Shader this_shader("src/resources/shader/vs.glsl", "src/resources/shader/fs.glsl");
+	Shader this_shader("src/resources/shader/vertex_shader.glsl", "src/resources/shader/fragment_shader.glsl");
+	// Shader this_shader("src/resources/shader/vs.glsl", "src/resources/shader/fs.glsl");
 
 	spdlog::info("着色器创建成功，开始读取高斯数据");
 	GScloudPtr Gaussian_cloud(new pcl::PointCloud<GaussianData>);
-	auto ret_value = pcl::io::loadPLYFile<GaussianData>(R"(Z:/非结构化数据/高斯模型/输电/m77_绝缘子.ply)", *Gaussian_cloud);
+	auto ret_value = pcl::io::loadPLYFile<GaussianData>(R"(Z:\非结构化数据\高斯模型\变电\point_cloud_40000.ply)", *Gaussian_cloud);
 	int numInstances = Gaussian_cloud->points.size();
 	if (!ret_value) {
 		cout << "高斯初始化成功, 点数为" << numInstances << endl;
@@ -190,6 +189,7 @@ int main() {
 	GLuint pointsBindIdx = 2;
 	GLuint sortedBindIdx = 1;
 	GLuint ssbo1 = setupSSBO(pointsBindIdx, flat_gaussian_data); // 将SSBO绑定到binding = 2
+
 	glm::mat4 viewMat_init = camera.GetViewMatrix();
 	std::vector<int> gausIdx = sortGaussians(Gaussian_cloud, glm::mat3(viewMat_init));
 	GLuint ssbo2 = setupSSBO<int>(sortedBindIdx, gausIdx);
@@ -199,17 +199,8 @@ int main() {
 	float focal_z = SCR_HEIGHT / (2 * htany);
 	glm::vec3 hfov_focal(htanx, htany, focal_z);
 
-
-	const double frameDuration = 1.0 / 120.0;  // 每帧时间（秒）
 	while (!glfwWindowShouldClose(window)) {
-		// 记录帧开始时间
-		auto frameStart = std::chrono::high_resolution_clock::now();
 
-		// 更新时间逻辑
-		float currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-		 
 		processInput(window);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

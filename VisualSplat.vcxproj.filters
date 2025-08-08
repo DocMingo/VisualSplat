@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="G:\pointcloudrendering\Glad\src\glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -25,6 +22,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\utils.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\viewer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VisualSplats.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Viewer_main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="include\utils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -36,6 +45,8 @@
     <None Include="src\resources\shader\2.2.light_cube.fs" />
     <None Include="src\resources\shader\fragment_shader.glsl" />
     <None Include="src\resources\shader\vertex_shader.glsl" />
+    <None Include="src\resources\shader\fs.glsl" />
+    <None Include="src\resources\shader\vs.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stb_image.h">
@@ -53,5 +64,12 @@
     <ClInclude Include="include\utils.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="include\Header.cuh" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="include\File.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="src\resources\config.txt" />
   </ItemGroup>
 </Project>

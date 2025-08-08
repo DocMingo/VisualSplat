@@ -1,6 +1,8 @@
+#pragma once
 #include<glm/glm.hpp>
 #include<vector>
 #include"Splats.h"
+#include<map>
 
 // 球谐基函数常数 (来自SH理论推导)
 const float C0 = 0.28209479177387814f;  // 0阶 (l=0, m=0)
@@ -30,4 +32,11 @@ inline glm::vec3 SH2RGB(const glm::vec3& color) {
 
 std::vector<int> sortGaussians(GScloudPtr splatCloud, const glm::mat3& viewMat);
 
+/*
+{
+train_path:"D:\pointcloudSrc\train"
+predict_path:"D:\pointcloudSrc\train\class2"
+}
+*/
+std::map<std::string, std::string> parseFileData(const std::string& filePath);
 
