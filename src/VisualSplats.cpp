@@ -6,12 +6,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include<pcl/common/common.h>
 #include<pcl/io/pcd_io.h>
 // #include<pcl/io/ply/ply_parser.h>
 #include<pcl/io/ply_io.h>
 #include<vector>
 #include<spdlog/spdlog.h>
 #include<learnopengl/camera.h>
+// #include<point_cloud_render_camera.h>
 #include<learnopengl/shader_m.h>
 #include<fmt/format.h>
 // #include<dmyDependence/dmyTool.h>
@@ -21,6 +23,9 @@
 #include<device_launch_parameters.h>
 #include"../include/Header.cuh"
 
+#define USE_IMGUI 1
+
+#include<ImGuiFPSDisplay.hpp>
 
 __global__ void helloworld_from_gpu(void) {
 	printf("Hello world from GPU\n");
@@ -35,8 +40,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1080;
+const unsigned int SCR_HEIGHT = 680;
 float fov = 90.0f;
 float znear = 0.01f;
 float zfar = 100.f;
@@ -118,12 +123,20 @@ int main() {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);// 默认设置，可以删除
 
     /*初始化glad*/
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD\n"; return -1;
     }
+
+    spdlog::info("=== imgui ===");
+    // 使用ImGui方案
+    ImGuiFPSDisplay fpsDisplay;
+    if (!fpsDisplay.initialize(window)) {
+        return -1;
+    }
+
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -139,8 +152,13 @@ int main() {
         cout << "高斯初始化成功, 点数为" << numInstances << endl;
     }
 
+	// pcl::PointXYZ minp, maxp;
+	// pcl::getMinMax3D(*Gaussian_cloud, minp, maxp);
+
     // 初始化相机
     camera.Position = glm::vec3(Gaussian_cloud->points[0].x, Gaussian_cloud->points[0].y, Gaussian_cloud->points[0].z);
+	// PointCloudCamera camera;
+    // camera.fitToPointCloud();
 
     // 准备高斯数据
     std::vector<float> flat_gaussian_data;
@@ -199,6 +217,10 @@ int main() {
     float focal_z = SCR_HEIGHT / (2 * htany);
     glm::vec3 hfov_focal(htanx, htany, focal_z);
 
+    // 性能计时器
+    auto frameStart = std::chrono::high_resolution_clock::now();
+    auto sortStart = frameStart;
+    auto renderStart = frameStart;
     const double frameDuration = 1.0 / 120.0;
     while (!glfwWindowShouldClose(window)) {
         auto frameStart = std::chrono::high_resolution_clock::now();
@@ -207,6 +229,9 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        // 更新FPS计数器
+        fpsDisplay.update();
+
         processInput(window);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -214,12 +239,12 @@ int main() {
         glm::mat4 viewMat = camera.GetViewMatrix();
 
         // 使用CUDA进行排序，直接更新OpenGL SSBO
-        auto startSort = std::chrono::high_resolution_clock::now();
+        sortStart = std::chrono::high_resolution_clock::now();
         cudaSorter.sortGaussians(ssbo1, glm::mat3(viewMat));
-        auto endSort = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endSort - startSort).count();
-        cout << format("sort during: {} ns", (endSort - startSort).count());
+        auto sortEnd = std::chrono::high_resolution_clock::now();
+        double sortTime = std::chrono::duration<double, std::milli>(sortEnd - sortStart).count();
 
+        renderStart = std::chrono::high_resolution_clock::now();
         // 设置着色器参数
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom),
             (float)SCR_WIDTH / (float)SCR_HEIGHT,
@@ -235,6 +260,16 @@ int main() {
         glBindVertexArray(VAO);
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0, numInstances);
         glBindVertexArray(0);
+
+        auto renderEnd = std::chrono::high_resolution_clock::now();
+        double renderTime = std::chrono::duration<double, std::milli>(renderEnd - renderStart).count();
+
+        // 设置性能数据并渲染ImGui
+        auto frameEnd = std::chrono::high_resolution_clock::now();
+        double totalTime = std::chrono::duration<double, std::milli>(frameEnd - frameStart).count();
+        fpsDisplay.setPerformanceTimes(sortTime, renderTime, totalTime);
+        fpsDisplay.render();
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();

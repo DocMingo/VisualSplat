@@ -4,11 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VisualSplat", "VisualSplat.vcxproj", "{C7EFC16C-D985-47D4-8674-5E4F0318C851}"
-	ProjectSection(ProjectDependencies) = postProject
-		{FAF30099-2753-4964-9706-D9730F3971BA} = {FAF30099-2753-4964-9706-D9730F3971BA}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CudaRuntimeOpenGL", "..\CudaRuntimeOpenGL\CudaRuntimeOpenGL.vcxproj", "{FAF30099-2753-4964-9706-D9730F3971BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,14 +21,6 @@ Global
 		{C7EFC16C-D985-47D4-8674-5E4F0318C851}.Release|x64.Build.0 = Release|x64
 		{C7EFC16C-D985-47D4-8674-5E4F0318C851}.Release|x86.ActiveCfg = Release|Win32
 		{C7EFC16C-D985-47D4-8674-5E4F0318C851}.Release|x86.Build.0 = Release|Win32
-		{FAF30099-2753-4964-9706-D9730F3971BA}.Debug|x64.ActiveCfg = Debug|x64
-		{FAF30099-2753-4964-9706-D9730F3971BA}.Debug|x64.Build.0 = Debug|x64
-		{FAF30099-2753-4964-9706-D9730F3971BA}.Debug|x86.ActiveCfg = Debug|x64
-		{FAF30099-2753-4964-9706-D9730F3971BA}.Debug|x86.Build.0 = Debug|x64
-		{FAF30099-2753-4964-9706-D9730F3971BA}.Release|x64.ActiveCfg = Release|x64
-		{FAF30099-2753-4964-9706-D9730F3971BA}.Release|x64.Build.0 = Release|x64
-		{FAF30099-2753-4964-9706-D9730F3971BA}.Release|x86.ActiveCfg = Release|x64
-		{FAF30099-2753-4964-9706-D9730F3971BA}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
