@@ -69,7 +69,6 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\props\OpenGL.props" />
     <Import Project="..\props\pclrelease.props" />
     <Import Project="..\props\Algorithm3d_Cpp.props" />
     <Import Project="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\extras\visual_studio_integration\MSBuildExtensions\CUDA 12.4.props" />
@@ -164,11 +163,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
-    <CudaCompile Include="include\File.cu">
-      <FileType>Document</FileType>
-      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_89,sm_89</CodeGeneration>
-      <GPUDebugInfo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GPUDebugInfo>
-    </CudaCompile>
+    <ClInclude Include="E:\images\algorithm3d_cpp\dmyDependence\util\unsuck.hpp" />
     <ClInclude Include="include\Header.cuh" />
     <None Include="src\resources\shader\fragment_shader.glsl" />
     <None Include="src\resources\shader\fs.glsl" />
@@ -181,7 +176,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ImGuiFPSDisplay.hpp" />
-    <ClInclude Include="include\learnopengl\camera.h" />
     <ClInclude Include="include\point_cloud_render_camera.h" />
     <ClInclude Include="include\shader_m.h" />
     <ClInclude Include="include\stb_image.h" />

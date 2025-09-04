@@ -1,6 +1,5 @@
 #pragma once
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 #include <device_launch_parameters.h>
@@ -47,12 +46,6 @@ public:
     ~CudaGaussianSorter() {
         cleanup();
     }
-
-    // 初始化CUDA资源和OpenGL互操作
-    bool initialize(GLuint gaussianSSBO, GLuint indexSSBO, int pointCount);
-
-    // 执行CUDA排序
-    void sortGaussians(GLuint gaussianSSBO, const glm::mat3& viewMat);
 
     void cleanup();
 };
