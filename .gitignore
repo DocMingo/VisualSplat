@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /reference
 /src/resources/textures
+/src/resources/config.txt

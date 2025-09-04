@@ -1,3 +1,0 @@
-{
-GSpath:"Z:\非结构化数据\高斯模型\变电\point_cloud_40000.ply"
-}
