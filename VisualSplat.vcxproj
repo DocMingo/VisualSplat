@@ -157,9 +157,10 @@
     <ClCompile Include="src\resources\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\resources\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\viewer.cpp" />
-    <ClCompile Include="src\VisualSplats.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    <ClCompile Include="src\Viewer_sample.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\VisualSplats.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
@@ -186,9 +187,6 @@
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\stb_image_write.h" />
     <ClInclude Include="include\utils.h" />
-    <ClCompile Include="src\Viewer_main.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>

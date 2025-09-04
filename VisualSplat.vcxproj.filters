@@ -27,12 +27,6 @@
     <ClCompile Include="src\viewer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\VisualSplats.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Viewer_main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="include\utils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -55,6 +49,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\resources\imgui\imgui_draw.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Viewer_sample.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VisualSplats.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

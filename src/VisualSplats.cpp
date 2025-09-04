@@ -16,6 +16,7 @@
 // #include<point_cloud_render_camera.h>
 #include<learnopengl/shader_m.h>
 #include<fmt/format.h>
+#include<filesystem>
 // #include<dmyDependence/dmyTool.h>
 
 #include "cudaGL.h"
@@ -97,7 +98,7 @@ void updateSSBO(GLuint ssbo, const std::vector<T>& data) {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-// 修改后的主函数 - 集成CUDA排序
+// 修改后的主函数 - 集成CUDA排序shi
 int main() {
     /*=== load config file ===*/
     std::map config_map = parseFileData(R"(D:\Work\VSProject\VisualSplat\src\resources\config.txt)");
