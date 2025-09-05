@@ -81,8 +81,22 @@ mat3 computeCov3D_rota(vec4 rots, vec3 scales) {
     // 归一化四元数
     rots = normalize(rots);
 
-    // 旋转矩阵
     mat3 R = mat3(
+        1.0 - 2.0 * (rots.y * rots.y + rots.z * rots.z),
+        2.0 * (rots.x * rots.y - rots.z * rots.w),      
+        2.0 * (rots.x * rots.z + rots.y * rots.w),      
+
+        2.0 * (rots.x * rots.y + rots.z * rots.w),      
+        1.0 - 2.0 * (rots.x * rots.x + rots.z * rots.z),
+        2.0 * (rots.y * rots.z - rots.x * rots.w),      
+
+        2.0 * (rots.x * rots.z - rots.y * rots.w),      
+        2.0 * (rots.y * rots.z + rots.x * rots.w),      
+        1.0 - 2.0 * (rots.x * rots.x + rots.y * rots.y) 
+    );
+
+    // 旋转矩阵
+    mat3 R1 = mat3(
         1.0 - 2.0 * (rots.z * rots.z + rots.w * rots.w),
         2.0 * (rots.y * rots.z + rots.x * rots.w),
         2.0 * (rots.y * rots.w - rots.x * rots.z),
@@ -103,8 +117,8 @@ mat3 computeCov3D_rota(vec4 rots, vec3 scales) {
         0.0, 0.0, scales.z
     );
 
-    mat3 M = R * S;
-    return transpose(M) * M;
+    mat3 M = R1 * S;
+    return  M * transpose(M);
 }
 
 void main() {
@@ -126,8 +140,8 @@ void main() {
     }
 
     // 2. 计算协方差矩阵
-    mat3 cov3d = computeCov3D(rotation, scale);
-    // mat3 cov3d = computeCov3D_rota(rotation, scale);
+    // mat3 cov3d = computeCov3D(rotation, scale);
+    mat3 cov3d = computeCov3D_rota(rotation, scale);
 
     // 3. 应用视图变换和投影变换
 
@@ -161,8 +175,11 @@ void main() {
         0.0, 0.0, 0.0
     );
 
-    mat3 T = transpose(mat3(view)) * J;
-    mat3 cov2dMat = transpose(T) * transpose(cov3d) * T;
+    // mat3 T = transpose(mat3(view)) * J;
+    // mat3 cov2dMat = transpose(T) * transpose(cov3d) * T;
+
+    mat3 T = J * transpose(mat3(view));  // 顺序反过来
+    mat3 cov2dMat = T * cov3d * transpose(T);  // 不需要额外的transpose
 
     // 6. 添加数值稳定项
     cov2dMat[0][0] += 0.3;
