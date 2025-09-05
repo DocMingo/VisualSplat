@@ -3,6 +3,7 @@
 #include<pcl/point_types.h>
 #include<pcl/point_cloud.h>
 #include<string>
+#include<Eigen/core>
 
 struct GaussianData {
 	PCL_ADD_POINT4D; // property float x y z; the mean of the splat
@@ -29,5 +30,13 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
 using GScloud = pcl::PointCloud<GaussianData>;
 using GScloudPtr = GScloud::Ptr;
 
-
-
+struct GaussianAxisInfo {
+	Eigen::Vector3f axis_directions[3];  // 三个主轴在世界坐标系中的方向
+	float axis_lengths[3];               // 对应的轴长
+	int longest_axis_idx;                // 最长轴的索引
+	Eigen::Vector3f center;              // 椭球中心
+};
+// 提取高斯椭球的主轴信息
+GaussianAxisInfo extractGaussianAxes(const GaussianData& thisGS);
+// 四元数转旋转矩阵
+Eigen::Matrix3f quaternionToMatrix(const Eigen::Vector4f& q);

@@ -75,7 +75,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)include;D:\Work\VSProject\VisualSplat\src\resources;$(IncludePath)</IncludePath>
+    <IncludePath>G:\workspace\RunMyGauss\include;$(ProjectDir)include;D:\Work\VSProject\VisualSplat\src\resources;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <ExternalIncludePath>;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
@@ -125,7 +125,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <Optimization>Disabled</Optimization>
@@ -135,7 +135,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;OpenGL32.Lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <CodeGeneration>compute_89,sm_89</CodeGeneration>
@@ -145,43 +145,15 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="G:\pointcloudrendering\Glad\src\glad.c" />
+    <ClCompile Include="G:\workspace\RunMyGauss\src\unsuck.cpp" />
     <ClCompile Include="include\Splats.h" />
-    <ClCompile Include="include\utils.cpp" />
-    <ClCompile Include="src\resources\imgui\backends\imgui_impl_glfw.cpp" />
-    <ClCompile Include="src\resources\imgui\backends\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="src\resources\imgui\imgui.cpp" />
-    <ClCompile Include="src\resources\imgui\imgui_demo.cpp" />
-    <ClCompile Include="src\resources\imgui\imgui_draw.cpp" />
-    <ClCompile Include="src\resources\imgui\imgui_tables.cpp" />
-    <ClCompile Include="src\resources\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\viewer.cpp" />
-    <ClCompile Include="src\Viewer_sample.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\Splats.cpp" />
     <ClCompile Include="src\VisualSplats.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
-    <ClInclude Include="E:\images\algorithm3d_cpp\dmyDependence\util\unsuck.hpp" />
+    <ClInclude Include="G:\workspace\RunMyGauss\include\unsuck.hpp" />
     <ClInclude Include="include\Header.cuh" />
-    <None Include="src\resources\shader\fragment_shader.glsl" />
-    <None Include="src\resources\shader\fs.glsl" />
-    <None Include="src\resources\shader\vertex_shader.glsl" />
-    <None Include="src\resources\shader\2.2.light_cube.fs" />
-    <None Include="src\resources\shader\2.2.light_cube.vs" />
-    <None Include="src\resources\shader\camera.fs" />
-    <None Include="src\resources\shader\camera.vs" />
-    <None Include="src\resources\shader\vs.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\ImGuiFPSDisplay.hpp" />
-    <ClInclude Include="include\point_cloud_render_camera.h" />
-    <ClInclude Include="include\shader_m.h" />
-    <ClInclude Include="include\stb_image.h" />
-    <ClInclude Include="include\stb_image_write.h" />
-    <ClInclude Include="include\utils.h" />
-    <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="src\resources\config.txt" />
