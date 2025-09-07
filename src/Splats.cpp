@@ -11,7 +11,7 @@ GaussianAxisInfo extractGaussianAxes(const GaussianData& thisGS) {
 	quaternions << thisGS.rot_0, thisGS.rot_1, thisGS.rot_2, thisGS.rot_3;
     Eigen::Matrix3f R = quaternionToMatrix(quaternions);
 
-    std::cout << R;
+    // std::cout << R;
 
 	Eigen::Vector3f scales; // Ëõ·Å
 	scales << exp(thisGS.scale_0), exp(thisGS.scale_1), exp(thisGS.scale_2);
