@@ -27,9 +27,6 @@
     <ClCompile Include="src\viewer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="include\utils.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\resources\imgui\imgui.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -76,7 +73,7 @@
     <ClInclude Include="include\stb_image_write.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\learnopengl\camera.h">
+    <ClInclude Include="include\learnopengl\camera_m.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\shader_m.h">
@@ -90,6 +87,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\point_cloud_render_camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\learnopengl\camera_ori.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

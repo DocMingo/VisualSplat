@@ -12,10 +12,10 @@
 #include<pcl/io/ply_io.h>
 #include<vector>
 #include<spdlog/spdlog.h>
-#include<learnopengl/camera.h>
+#include<learnopengl/camera_m.h>
 // #include<point_cloud_render_camera.h>
 #include<learnopengl/shader_m.h>
-#include<fmt/format.h>
+#include<format>
 #include<filesystem>
 // #include<dmyDependence/dmyTool.h>
 
@@ -39,19 +39,21 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 // settings
 const unsigned int SCR_WIDTH = 1080;
 const unsigned int SCR_HEIGHT = 680;
-float fov = 90.0f;
-float znear = 0.01f;
-float zfar = 100.f;
+float fov = 50.0f;
+
 
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
+bool firstMouse = true;
+bool leftMousePressed = false;
 
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
 
 // timing
 float deltaTime = 0.0f;
@@ -100,6 +102,7 @@ void updateSSBO(GLuint ssbo, const std::vector<T>& data) {
 
 // 修改后的主函数 - 集成CUDA排序shi
 int main() {
+
     /*=== load config file ===*/
     std::map config_map = parseFileData(R"(D:\Work\VSProject\VisualSplat\src\resources\config.txt)");
 
@@ -122,9 +125,11 @@ int main() {
     if (!window) { std::cerr << "Failed to create GLFW window\n"; return -1; }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetCursorPosCallback(window, mouse_callback); // 获取光标位置参数
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetScrollCallback(window, scroll_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);// 默认设置，可以删除
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);// 默认设置，可以删除
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
     /*初始化glad*/
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -157,7 +162,15 @@ int main() {
 	// pcl::getMinMax3D(*Gaussian_cloud, minp, maxp);
 
     // 初始化相机
-    camera.Position = glm::vec3(Gaussian_cloud->points[0].x, Gaussian_cloud->points[0].y, Gaussian_cloud->points[0].z);
+    // camera.Position = glm::vec3(Gaussian_cloud->points[0].x, Gaussian_cloud->points[0].y, Gaussian_cloud->points[0].z);
+	Eigen::Vector3f centroid;
+    Eigen::Matrix3f matr_gs = Gaussian_cloud->getMatrixXfMap().block(0,0,3, numInstances);
+    centroid = matr_gs.rowwise().mean(); // 1 * 3
+
+    size_t middleIndex = numInstances >> 1;
+	camera.Position = glm::vec3(0,0,0);
+	camera.center = glm::vec3(0,0,0);
+	spdlog::info("相机初始化成功,位置为:{},{},{}", camera.Position.x, camera.Position.y, camera.Position.z);
 	// PointCloudCamera camera;
     // camera.fitToPointCloud();
 
@@ -165,12 +178,13 @@ int main() {
     std::vector<float> flat_gaussian_data;
     flat_gaussian_data.reserve(numInstances * 14);
     for (const auto& point : Gaussian_cloud->points) {
+        cout << Eigen::Vector4f(point.rot_0, point.rot_1, point.rot_2, point.rot_3).transpose() << endl;
         glm::vec4 normRot = normalizeRotation(glm::vec4(point.rot_0, point.rot_1, point.rot_2, point.rot_3));
         glm::vec3 RGB = SH2RGB(glm::vec3(point.f_dc_0, point.f_dc_1, point.f_dc_2));
         flat_gaussian_data.insert(flat_gaussian_data.end(), {
-            point.x, point.y, point.z,
+            point.x - centroid[0], point.y- centroid[1], point.z- centroid[2],
             normRot.x, normRot.y, normRot.z, normRot.w,
-            glm::exp(point.scale_0), glm::exp(point.scale_1), glm::exp(point.scale_2),
+            glm::exp(1.0f*point.scale_0), glm::exp(1.0f * point.scale_1), glm::exp(1.0f * point.scale_2),
             sigmoid(point.opacity),
             RGB.x, RGB.y, RGB.z
             });
@@ -249,7 +263,7 @@ int main() {
         // 设置着色器参数
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom),
             (float)SCR_WIDTH / (float)SCR_HEIGHT,
-            0.1f, 100.0f);
+            0.1f, 100000.f);
 
         this_shader.use();
         this_shader.setMat4("projection", projection);
@@ -295,21 +309,24 @@ int main() {
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window)
 {
+    /*
+    glfwGetKey(window, key) 只检测键盘按键，比如 W, A, S, D。
+    鼠标按钮（左、中、右键）需要用 glfwGetMouseButton(window, button)：
+    */
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		camera.ProcessKeyboard(ROTATION_0, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		camera.ProcessKeyboard(ROTATION_1, deltaTime);
+	// if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	// 	camera.ProcessKeyboard(FORWARD, deltaTime);
+	// if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	// 	camera.ProcessKeyboard(BACKWARD, deltaTime);
+	// if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	// 	camera.ProcessKeyboard(LEFT, deltaTime);
+	// if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	// 	camera.ProcessKeyboard(RIGHT, deltaTime);
+    // if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {};
+        // 设置鼠标控制事件切换
+
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -334,19 +351,46 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 		lastY = ypos;
 		firstMouse = false;
 	}
-
+    
 	float xoffset = xpos - lastX;
 	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
+    
 	lastX = xpos;
 	lastY = ypos;
-
-	camera.ProcessMouseMovement(xoffset, yoffset);
+    
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
+        camera.orbitRotate(xoffset, yoffset);
+    }
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) {
+        camera.ProcessDirectMove(xoffset, yoffset);
+    }
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE)) {
+        camera.ProcessMouseScroll(yoffset);
+    }
 }
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
+// 鼠标按键回调函数
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            leftMousePressed = true;
+            // 获取当前鼠标位置，避免跳跃
+            double xpos, ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+            lastX = static_cast<float>(xpos);
+            lastY = static_cast<float>(ypos);
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            leftMousePressed = false;
+        }
+    }
+}
+
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(static_cast<float>(yoffset));
+    camera.zoom(static_cast<float>(yoffset));
 }

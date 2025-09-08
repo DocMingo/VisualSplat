@@ -79,6 +79,7 @@
     <IncludePath>$(ProjectDir)include;D:\Work\VSProject\VisualSplat\src\resources;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <ExternalIncludePath>;$(ExternalIncludePath)</ExternalIncludePath>
+    <IntDir>$(Platform)\$(Configuration)\中间目录</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -148,7 +149,6 @@
   <ItemGroup>
     <ClCompile Include="G:\pointcloudrendering\Glad\src\glad.c" />
     <ClCompile Include="include\Splats.h" />
-    <ClCompile Include="include\utils.cpp" />
     <ClCompile Include="src\resources\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="src\resources\imgui\backends\imgui_impl_opengl3.cpp" />
     <ClCompile Include="src\resources\imgui\imgui.cpp" />
@@ -181,7 +181,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ImGuiFPSDisplay.hpp" />
-    <ClInclude Include="include\learnopengl\camera.h" />
+    <ClInclude Include="include\learnopengl\camera_m.h" />
+    <ClInclude Include="include\learnopengl\camera_ori.h" />
     <ClInclude Include="include\point_cloud_render_camera.h" />
     <ClInclude Include="include\shader_m.h" />
     <ClInclude Include="include\stb_image.h" />

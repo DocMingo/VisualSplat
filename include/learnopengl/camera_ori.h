@@ -1,4 +1,4 @@
-#ifndef CAMERA_H
+ï»¿#ifndef CAMERA_H
 #define CAMERA_H
 
 #include <glad/glad.h>
@@ -48,7 +48,7 @@ public:
     {
         Position = position;
         WorldUp = up;
-        // glm::vec3 worldUp = glm::vec3(0.0f, 0.0f, 1.0f); // Z ÖáÏòÉÏ
+        // glm::vec3 worldUp = glm::vec3(0.0f, 0.0f, 1.0f); // Z ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         Yaw = yaw;
         Pitch = pitch;
         updateCameraVectors();
@@ -76,7 +76,7 @@ public:
         using namespace std;
         float velocity = MovementSpeed * deltaTime;
         // float velocity = MovementSpeed;
-        
+
         cout << "MovementSpeed:" << MovementSpeed << endl;
         cout << "deltaTime:" << deltaTime << endl;
         cout << "velocity:" << velocity << endl;
@@ -92,7 +92,7 @@ public:
             Position += Right * velocity;
         if (direction == ROTATION_0) {
             // Yaw += velocity;
-            glm::mat3 rotationMat = glm::rotate(glm::mat4(1.0f), glm::radians(50.0f ), glm::vec3(0, 1, 0));
+            glm::mat3 rotationMat = glm::rotate(glm::mat4(1.0f), glm::radians(50.0f), glm::vec3(0, 1, 0));
             Front = glm::normalize(rotationMat * Front);
             // updateCameraVectors();
         }
