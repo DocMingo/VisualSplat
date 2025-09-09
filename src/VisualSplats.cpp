@@ -33,24 +33,13 @@
 
 using namespace std;
 
-int main()
-{
-    int a = 1;
-    int b = 9;
-    int middle_1 = (a + b) / 2;
-    int middle_2 = (a + b) >> 1;
-    cout << middle_1 << endl;
-    cout << middle_2 << endl;
-
-
-}
 // 修改后的主函数 - 集成CUDA排序
-int main1() {
+int main() {
     pcl::visualization::PCLVisualizer viewer("3D Viewer");
     printfmt("目前的工作路径为{}\n", fs::current_path().string());
     std::map<std::string, std::string> config_map;
     try {
-        config_map = parseFileData(R"(config.txt)");
+        config_map = parseFileData(R"(.\src\resources\config.txt)");
     }
     catch (std::runtime_error& e) {
         printfmt("{}\n", e.what());
@@ -67,18 +56,18 @@ int main1() {
     // 生成高斯孪生点云
     Eigen::MatrixXf eigenMat(3, numInstances);
     eigenMat = Gaussian_cloud->getMatrixXfMap().block(0, 0, 3, numInstances);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr TwinBornCloud{ new pcl::PointCloud<pcl::PointXYZ> };
-    TwinBornCloud->resize(numInstances);
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr TwinBornCloud{ new pcl::PointCloud<pcl::PointXYZ> };
+    // TwinBornCloud->resize(numInstances);
     // TwinBornCloud->assign(numInstances, pcl::PointXYZ()); // 容器 TwinBornCloud 的大小变为 eigenMat.cols(), 每个元素都是默认的 pcl::PointXYZ(0, 0, 0)
-    TwinBornCloud->getMatrixXfMap().block(0, 0, 3, numInstances) = eigenMat;
-    viewer.addPointCloud(TwinBornCloud, "TwinCloud");
+    // TwinBornCloud->getMatrixXfMap().block(0, 0, 3, numInstances) = eigenMat;
+    // viewer.addPointCloud(TwinBornCloud, "TwinCloud");
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr denseGSCloud{ new pcl::PointCloud<pcl::PointXYZ>() }; // 用于存储高斯架构点云
     viewer.addPointCloud(denseGSCloud, "densecloud");
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 1, 0, 0, "densecloud");
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "densecloud");
-    viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0, 1, 0, "TwinCloud");
-    viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "TwinCloud");
+    // viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0.3, 0.3, 0.3, "TwinCloud");
+    // viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "TwinCloud");
 
     int num{ 10 };
     static int indices{ 0 };
@@ -100,14 +89,38 @@ int main1() {
         *denseGSCloud += *GSpoints; // ->point 返回 vector
 
         if (indices % 100 == 0) {
-            viewer.updatePointCloud(denseGSCloud, "densecloud");
-
+            // viewer.updatePointCloud(denseGSCloud, "densecloud");
         }
-        viewer.spinOnce();
+        // viewer.spinOnce();
     }
     printfmt("denseGSCloud 点云数量为{}", denseGSCloud->points.size());
 
+    // while (!viewer.wasStopped()) {
+    //     viewer.spinOnce();
+    // }
+
+	// 对于稠密高斯点云构建 KDTree, 生成节点点云？
+    pcl::PointCloud<pcl::PointXYZ>::Ptr nodeCloud{ new pcl::PointCloud<pcl::PointXYZ> };
+    
+	pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    kdtree.setInputCloud(denseGSCloud);
+#pragma omp parallel for
+	for (size_t i = 0; i < denseGSCloud->points.size(); ++i) {
+        pcl::Indices thisGSindices;
+		std::vector<float> thisGSsqrDistances;
+		kdtree.radiusSearch(denseGSCloud->points[i], 0.1, thisGSindices, thisGSsqrDistances);
+        if (thisGSindices.size() > 20) {
+            #pragma omp critical
+            nodeCloud->points.push_back(denseGSCloud->points[i]);
+        }
+	}
+    cout << "kd tree 完成" << endl;
+    viewer.addPointCloud(nodeCloud, "nodeCloud");
+    viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 20, "nodeCloud");
+    viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 1,0, 1, "nodeCloud");
+    cout << "渲染Node CLoud" << endl;
     while (!viewer.wasStopped()) {
         viewer.spinOnce();
     }
+
 }
