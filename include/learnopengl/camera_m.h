@@ -61,7 +61,7 @@ public:
         Yaw = yaw;
         Pitch = pitch;
 		Distance = glm::length(Position - center);
-        Front = glm::normalize(center - Position);
+        // Front = glm::normalize(center - Position);
         // Distance = glm::abs(glm::dot(Position - center, Front));
         updateCameraVectors();
     }
@@ -73,7 +73,7 @@ public:
         center = glm::vec3(0.0f, 0.0f, 0.0f); // 初始化中心点
         Yaw = yaw;
         Pitch = pitch;
-        Front = glm::normalize(center - Position);
+        // Front = glm::normalize(center - Position);
         Distance = glm::length(Position - center);
         // Distance = glm::abs(glm::dot(Position - center, Front));
         updateCameraVectors();
@@ -128,6 +128,7 @@ public:
             xoffset *= MouseSensitivity;
             yoffset *= MouseSensitivity;
 
+            
             Yaw += xoffset;
             Pitch += yoffset;
 
@@ -163,15 +164,45 @@ public:
 		Position += Front * speed;
 	}
     // ===== 轨道相机专用方法 =====
-    void updatePositionFromAngles() {
+    void updatePositionFromAngles(float a, float b) {
+        auto dis = Position - center;
+        float len2 = glm::length(dis);
+        glm::quat qYaw = glm::angleAxis(glm::radians(a), glm::normalize(WorldUp));
+        dis = qYaw * dis;
 
-        Position.x = center.x + Distance * cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-        Position.y = center.y + Distance * sin(glm::radians(Pitch));
-        Position.z = -center.z + Distance * sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+        glm::vec3 normOff = glm::normalize(dis);
+        glm::vec3 right = glm::cross(normOff, WorldUp); // 这生成一个与 offset 和 worldUp 正交的横向向量
+        if (glm::length(right) < 1e-8f) {
+            // 当 offset 几乎与 WorldUp 平行时，选一个默认横轴
+            right = glm::vec3(1.0f, 0.0f, 0.0f);
+        }
+        else {
+            right = glm::normalize(right);
+        }
 
-        // 更新Front向量（始终指向中心）
-        Front = glm::normalize(center - Position);
-        updateCameraVectors();
+        // 4. Pitch: 绕局部 right 轴旋转（注意方向，示例取正方向）
+        glm::quat qPitch = glm::angleAxis(glm::radians(b), right);
+        dis = qPitch * dis;
+
+        // 5. 可选：限制 Pitch，避免上下翻转
+        //    若要限制 pitch，总体策略是：
+        //      - 先计算旋转后的 pitch 角度（asin(y/len)），限制到范围，
+        //      - 若超出范围，回退并重算 offset（比较复杂），
+        //    简单实现：在调用 orbitAroundPoint 前限制传入的 pitchDeg 累积值。
+
+        // 6. 更新 Position + 方向向量
+        Position = center + dis;
+        Front = glm::normalize(center - Position); // 如果你希望相机指向 pivot
+        // 或者如果你希望保持原来的视角，则不要覆盖 Front
+        // 
+        // auto position = Position;
+        // position.x = center.x + Distance * cos(glm::radians(Yaw)) * cos(glm::radians(Pitch))  - dis.x;
+        // position.y = center.y + Distance * sin(glm::radians(Pitch))                           - dis.y;
+        // position.z = -center.z + Distance * sin(glm::radians(Yaw)) * cos(glm::radians(Pitch)) - dis.z;
+		// Position = position;
+        // // 更新Front向量（始终指向中心）
+        // Front = glm::normalize(center - Position);
+        // updateCameraVectors();
     }
 
     // 设置旋转中心点
@@ -179,13 +210,15 @@ public:
         center = newCenter;
         // 重新计算距离，保持相机到中心的相对位置
         Distance = glm::length(Position - center);
-        updatePositionFromAngles();
+        float a, b;
+        updatePositionFromAngles(a,b);
     }
 
     // 设置相机到中心点的距离
     void setDistance(float distance) {
         Distance = glm::clamp(distance, MinDistance, MaxDistance);
-        updatePositionFromAngles();
+        float a, b;
+        updatePositionFromAngles(a,b);
     }
 
     // 围绕中心点旋转（鼠标拖拽） - 这是你需要的主要方法
@@ -193,26 +226,47 @@ public:
         xoffset *= MouseSensitivity;
         yoffset *= MouseSensitivity;
 
-        Yaw += xoffset;
-        Pitch -= yoffset;  // 注意这里是减号，让鼠标上移时向上看
+        glm::vec3 offset = Position - center;
+        if (glm::length(offset) < 1e-8f) return;
 
-        // 限制俯仰角避免翻转
-        if (constrainPitch) {
-            if (Pitch > 89.0f)
-                Pitch = 89.0f;
-            if (Pitch < -89.0f)
-                Pitch = -89.0f;
-        }
+        // 1. yaw：绕全局上方向旋转
+        glm::quat qYaw = glm::angleAxis(glm::radians(-xoffset), glm::normalize(WorldUp));
+        offset = qYaw * offset;
 
-        // 根据新的角度更新相机位置
-        updatePositionFromAngles();
+        // 2. pitch：绕当前右方向旋转
+        glm::vec3 right = glm::normalize(glm::cross(glm::normalize(offset), WorldUp));
+        glm::quat qPitch = glm::angleAxis(glm::radians(-yoffset), right);
+        offset = qPitch * offset;
+
+        // 3. 更新相机
+        Position = center + offset;
+        Front = glm::normalize(center - Position);
+        updateCameraVectors();
+        // xoffset *= MouseSensitivity;
+        // yoffset *= MouseSensitivity;
+        // 
+        // Yaw += xoffset;
+        // Pitch -= yoffset;  // 注意这里是减号，让鼠标上移时向上看
+        // 
+        // // 限制俯仰角避免翻转
+        // if (constrainPitch) {
+        //     if (Pitch > 89.0f)
+        //         Pitch = 89.0f;
+        //     if (Pitch < -89.0f)
+        //         Pitch = -89.0f;
+        // }
+        // 
+        // float a{ Yaw }, b{ Pitch };
+        // // 根据新的角度更新相机位置
+        // updatePositionFromAngles(a,b);
     }
 
     // 缩放（改变到中心点的距离）
     void zoom(float yoffset) {
         Distance -= yoffset * MovementSpeed * 0.1f;
         Distance = glm::clamp(Distance, MinDistance, MaxDistance);
-        updatePositionFromAngles();
+        float a{0}, b{ 0 };
+        updatePositionFromAngles(a,b);
     }
 
 private:

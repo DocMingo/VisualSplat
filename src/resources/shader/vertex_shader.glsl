@@ -27,6 +27,7 @@ layout(std430, binding = 2) buffer gaussians_data {
 uniform mat4 view;
 uniform mat4 projection;
 uniform vec3 hfov_focal; // (fx, fy, f) 即 focal_x, focal_y, focal
+uniform float scaleMod; // 整体缩放因子
 
 // 传递给 fragment shader 的变量
 out vec3 outColor;
@@ -34,7 +35,7 @@ out float opacity;
 out vec2 coordxy;  // 当前 quad 中某像素相对于中心的坐标
 out vec3 conic;    // conic 系数（定义椭圆形状）
 
-float scaleMod = 1.01f; // 经验值，整体缩放因子
+// float scaleMod = 1.01f; // 经验值，整体缩放因子
 
 // 辅助函数：从 gData 中获取向量
 vec3 get_vec3(int offset) {

@@ -1,3 +1,7 @@
+/*
+* 1. 高斯椭球的scale是对数存储的，需要在着色器中exp恢复
+* 2. 在imgui中添加参数调节
+*/
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <Splats.h>
@@ -178,7 +182,7 @@ int main() {
     std::vector<float> flat_gaussian_data;
     flat_gaussian_data.reserve(numInstances * 14);
     for (const auto& point : Gaussian_cloud->points) {
-        cout << Eigen::Vector4f(point.rot_0, point.rot_1, point.rot_2, point.rot_3).transpose() << endl;
+        // cout << Eigen::Vector4f(point.rot_0, point.rot_1, point.rot_2, point.rot_3).transpose() << endl;
         glm::vec4 normRot = normalizeRotation(glm::vec4(point.rot_0, point.rot_1, point.rot_2, point.rot_3));
         glm::vec3 RGB = SH2RGB(glm::vec3(point.f_dc_0, point.f_dc_1, point.f_dc_2));
         flat_gaussian_data.insert(flat_gaussian_data.end(), {
@@ -270,6 +274,7 @@ int main() {
         this_shader.setVec3("hfov_focal", hfov_focal);
         this_shader.setMat4("view", viewMat);
         this_shader.setVec3("camera_position", camera.Position);
+        this_shader.setFloat("scaleMod", fpsDisplay.getEllipsoidParameters().uniformScale);
 
         // 绘制
         glBindVertexArray(VAO);

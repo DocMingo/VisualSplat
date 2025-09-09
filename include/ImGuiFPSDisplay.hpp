@@ -9,6 +9,27 @@
 #include <iomanip>
 #include <sstream>
 
+// 椭球参数结构体
+struct EllipsoidParameters {
+    float scaleX = 1.0f;        // X轴缩放
+    float scaleY = 1.0f;        // Y轴缩放
+    float scaleZ = 1.0f;        // Z轴缩放
+    float uniformScale = 1.0f;   // 统一缩放
+    bool useUniformScale = false; // 是否使用统一缩放
+
+    // 获取最终的缩放值
+    void getFinalScale(float& x, float& y, float& z) const {
+        if (useUniformScale) {
+            x = y = z = uniformScale;
+        }
+        else {
+            x = scaleX;
+            y = scaleY;
+            z = scaleZ;
+        }
+    }
+};
+
 // 1. 简单的FPS计数器类
 class FPSCounter {
 private:
@@ -87,11 +108,17 @@ private:
     std::deque<float> fpsHistory;
     bool showDemo;
     bool showMetrics;
+    bool showParameterPanel; // 新增：显示参数控制面板
+	bool showGlobalScalingFactor; // 新增：显示全局缩放因子
+
 
     // 性能监控变量
     double gpuSortTime;
     double renderTime;
     double totalFrameTime;
+
+    // 椭球参数
+    EllipsoidParameters ellipsoidParams;
 
     static constexpr int HISTORY_SIZE = 120; // 2秒的历史数据（60FPS）
 
@@ -99,6 +126,8 @@ public:
     ImGuiFPSDisplay() :
         showDemo(false),
         showMetrics(true),
+        showParameterPanel(true), // 默认显示参数面板
+        showGlobalScalingFactor(true),
         gpuSortTime(0.0),
         renderTime(0.0),
         totalFrameTime(0.0) {}
@@ -153,6 +182,13 @@ public:
             renderMetricsWindow();
         }
 
+        if (showParameterPanel) {
+            renderParameterPanel();
+        }
+        
+        if (showGlobalScalingFactor) {
+            renderGlobalScalingFactor();
+        }
         if (showDemo) {
             ImGui::ShowDemoWindow(&showDemo);
         }
@@ -166,6 +202,16 @@ public:
         gpuSortTime = sortTime;
         renderTime = drawTime;
         totalFrameTime = frameTime;
+    }
+
+    // 获取椭球参数的接口
+    const EllipsoidParameters& getEllipsoidParameters() const {
+        return ellipsoidParams;
+    }
+
+    // 获取最终缩放值的便捷方法
+    void getEllipsoidScale(float& x, float& y, float& z) const {
+        ellipsoidParams.getFinalScale(x, y, z);
     }
 
 private:
@@ -223,7 +269,126 @@ private:
             showDemo = !showDemo;
         }
 
+        ImGui::SameLine();
+        if (ImGui::Button("Parameter Panel")) {
+            showParameterPanel = !showParameterPanel;
+        }
+
+        ImGui::End();
+    }
+
+    void renderGlobalScalingFactor() {
+        ImGui::Begin("Ellipsoid Parameters", &showGlobalScalingFactor, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("Scaling factor: ");
+        ImGui::Separator();
+
+        // 统一缩放模式
+        ImGui::SliderFloat("Scaling factor", &ellipsoidParams.uniformScale, 0.01f, 5.0f, "%.2f");
+
+        // 显示当前值
+        ImGui::Text("Current Scale: %.2f", ellipsoidParams.uniformScale);
+
+        ImGui::End();
+
+    }
+
+    void renderParameterPanel() {
+        ImGui::Begin("Ellipsoid Parameters", &showParameterPanel, ImGuiWindowFlags_AlwaysAutoResize);
+
+        ImGui::Text("Ellipsoid Size Control:");
+        ImGui::Separator();
+
+        // 统一缩放选项
+        if (ImGui::Checkbox("Use Uniform Scale", &ellipsoidParams.useUniformScale)) {
+            // 当切换到统一缩放时，使用当前X轴缩放作为基准
+            if (ellipsoidParams.useUniformScale) {
+                ellipsoidParams.uniformScale = ellipsoidParams.scaleX;
+            }
+        }
+
+        ImGui::Spacing();
+
+        if (ellipsoidParams.useUniformScale) {
+            // 统一缩放模式
+            ImGui::Text("Uniform Scale:");
+            ImGui::SliderFloat("Scale", &ellipsoidParams.uniformScale, 0.1f, 5.0f, "%.2f");
+
+            // 显示当前值
+            ImGui::Text("Current Scale: %.2f", ellipsoidParams.uniformScale);
+        }
+        else {
+            // 分轴缩放模式
+            ImGui::Text("Individual Axis Scale:");
+            ImGui::SliderFloat("Scale X", &ellipsoidParams.scaleX, 0.1f, 5.0f, "%.2f");
+            ImGui::SliderFloat("Scale Y", &ellipsoidParams.scaleY, 0.1f, 5.0f, "%.2f");
+            ImGui::SliderFloat("Scale Z", &ellipsoidParams.scaleZ, 0.1f, 5.0f, "%.2f");
+
+            // 显示当前值
+            ImGui::Spacing();
+            ImGui::Text("Current Scales:");
+            ImGui::Text("X: %.2f, Y: %.2f, Z: %.2f",
+                ellipsoidParams.scaleX,
+                ellipsoidParams.scaleY,
+                ellipsoidParams.scaleZ);
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        // 预设按钮
+        ImGui::Text("Presets:");
+        if (ImGui::Button("Reset to 1.0")) {
+            ellipsoidParams.scaleX = ellipsoidParams.scaleY = ellipsoidParams.scaleZ = 1.0f;
+            ellipsoidParams.uniformScale = 1.0f;
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Small (0.5)")) {
+            float scale = 0.5f;
+            ellipsoidParams.scaleX = ellipsoidParams.scaleY = ellipsoidParams.scaleZ = scale;
+            ellipsoidParams.uniformScale = scale;
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Large (2.0)")) {
+            float scale = 2.0f;
+            ellipsoidParams.scaleX = ellipsoidParams.scaleY = ellipsoidParams.scaleZ = scale;
+            ellipsoidParams.uniformScale = scale;
+        }
+
+        // 特殊形状预设
+        if (!ellipsoidParams.useUniformScale) {
+            ImGui::Spacing();
+            ImGui::Text("Shape Presets:");
+            if (ImGui::Button("Sphere")) {
+                ellipsoidParams.scaleX = ellipsoidParams.scaleY = ellipsoidParams.scaleZ = 1.0f;
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Pancake")) {
+                ellipsoidParams.scaleX = 2.0f;
+                ellipsoidParams.scaleY = 0.5f;
+                ellipsoidParams.scaleZ = 2.0f;
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Cigar")) {
+                ellipsoidParams.scaleX = 0.5f;
+                ellipsoidParams.scaleY = 3.0f;
+                ellipsoidParams.scaleZ = 0.5f;
+            }
+        }
+
+        // 实时显示最终缩放值
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Text("Final Scale Values (for shader):");
+        float finalX, finalY, finalZ;
+        ellipsoidParams.getFinalScale(finalX, finalY, finalZ);
+        ImGui::Text("X: %.2f, Y: %.2f, Z: %.2f", finalX, finalY, finalZ);
+
         ImGui::End();
     }
 };
+
 #endif
