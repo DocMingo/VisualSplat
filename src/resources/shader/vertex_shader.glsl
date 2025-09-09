@@ -279,7 +279,7 @@ void main() {
     mat3 T = transpose(mat3(view)) * J;
     mat3 cov2dMat = transpose(T) * transpose(cov3d) * T;
 
-    // mat3 T = J * transpose(mat3(view));  // 顺序反过来
+    // mat3 T = transpose(mat3(view)) * J;  // 顺序反过来
     // mat3 cov2dMat = T * cov3d * transpose(T);  // 不需要额外的transpose
 
     // 6. 添加数值稳定项
@@ -287,7 +287,7 @@ void main() {
     cov2dMat[1][1] += 0.3;
 
     float det = cov2dMat[0][0] * cov2dMat[1][1] - cov2dMat[0][1] * cov2dMat[1][0];
-    if (det == 0.0) {
+    if (det < 1e-8) {
         gl_Position = vec4(0.0, 0.0, 0.0, 0.0);
         return;
     }

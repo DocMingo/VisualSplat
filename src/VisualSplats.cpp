@@ -183,7 +183,9 @@ int main() {
     flat_gaussian_data.reserve(numInstances * 14);
     for (const auto& point : Gaussian_cloud->points) {
         // cout << Eigen::Vector4f(point.rot_0, point.rot_1, point.rot_2, point.rot_3).transpose() << endl;
-        glm::vec4 normRot = normalizeRotation(glm::vec4(point.rot_0, point.rot_1, point.rot_2, point.rot_3));
+		// cout << "point.scale" << point.scale_0 << "," << point.scale_1 << "," << point.scale_2 << endl;
+        glm::vec4 normRot = glm::normalize(glm::vec4(point.rot_0, point.rot_1, point.rot_2, point.rot_3));
+        // glm::vec4 normRot = normalizeRotation(glm::vec4(point.rot_0, point.rot_1, point.rot_2, point.rot_3));
         glm::vec3 RGB = SH2RGB(glm::vec3(point.f_dc_0, point.f_dc_1, point.f_dc_2));
         flat_gaussian_data.insert(flat_gaussian_data.end(), {
             point.x - centroid[0], point.y- centroid[1], point.z- centroid[2],
