@@ -309,12 +309,15 @@ void main() {
     gl_Position = pos2d;
 
     float depth = -cam.z;
-    vec3 depthColor = mapDepthToColor_Rainbow(depth, 0, 100);
+    vec3 depthColor = mapDepthToColor(depth, 0, 100);
+    //vec3 depthColor = mapDepthToColor_Heatmap(depth, 0, 100);
+    // vec3 depthColor = mapDepthToColor_Log(depth, 0, 500);
+    // vec3 depthColor = mapDepthToColor_Layers(depth, 0, 100,10);
 
     // 10. 传值给片段着色器
     coordxy = quadPosition * quadwh_scr;
-    outColor = colorVal;
+    // outColor = colorVal;
     // outColor = vec3(1.0f, 0.0f, 0.0f); // 强制输出红色
-    // outColor = depthColor;
+    outColor = depthColor;
     opacity = gData[start + OPACITY_IDX];
 }
