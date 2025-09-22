@@ -1,13 +1,10 @@
 ﻿/*
 * @author: Mingo
-2025-9-4: reestablish: 重建,使复原,使复位
+2025-9-22: 使用高斯主轴方向优化杆塔三角化模型
 */
 #include <iostream>
 #include <Splats.h>
 #include <unsuck.hpp>
-// #include <glm/glm.hpp>
-// #include <glm/gtc/matrix_transform.hpp>
-// #include <glm/gtc/type_ptr.hpp>
 #include<pcl/common/common.h> // 基础功能，比如 getMinMax3D
 #include<pcl/io/pcd_io.h>
 #include<pcl/visualization/pcl_visualizer.h>
@@ -77,17 +74,17 @@ int main() {
     for (const auto& gi : Gaussian_cloud->points) {
         indices++;
         // 1. 对于每个高斯椭球，生成参数表
-        auto this_GaussianAxisInfo = extractGaussianAxes(gi); 
+        auto this_GaussianAxisInfo = extractGaussianAxes(gi);
         GaussInfo.push_back(this_GaussianAxisInfo);
         // 2. 根据参数表生成单个稠密高斯
         pcl::PointCloud<pcl::PointXYZ>::Ptr GSpoints{ new pcl::PointCloud<pcl::PointXYZ> };
-        for (int i{-num/2}; i < num/2; ++i) { // 高斯主轴生成10个点
-			float scale =  static_cast<float>(i)/num;
+        for (int i{ -num / 2 }; i < num / 2; ++i) { // 高斯主轴生成10个点
+            float scale = static_cast<float>(i) / num;
             pcl::PointXYZ thisPoint{};
-			thisPoint.getVector3fMap() = this_GaussianAxisInfo.center + this_GaussianAxisInfo.axis_directions[this_GaussianAxisInfo.longest_axis_idx] * this_GaussianAxisInfo.axis_lengths[this_GaussianAxisInfo.longest_axis_idx] * scale;
+            thisPoint.getVector3fMap() = this_GaussianAxisInfo.center + this_GaussianAxisInfo.axis_directions[this_GaussianAxisInfo.longest_axis_idx] * this_GaussianAxisInfo.axis_lengths[this_GaussianAxisInfo.longest_axis_idx] * scale;
             GSpoints->points.push_back(thisPoint);
         }
-        
+
         // 2. 将稠密高斯放入总稠密点云
         *denseGSCloud += *GSpoints; // ->point 返回 vector
 
@@ -108,26 +105,26 @@ int main() {
         // runAS(denseGSCloud);
     }
 
-	// 对于稠密高斯点云构建 KDTree, 生成node节点
+    // 对于稠密高斯点云构建 KDTree, 生成node节点
     pcl::PointCloud<pcl::PointXYZ>::Ptr nodeCloud{ new pcl::PointCloud<pcl::PointXYZ> };
-    
-	pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
     kdtree.setInputCloud(denseGSCloud);
     #pragma omp parallel for
-	for (size_t i = 0; i < denseGSCloud->points.size(); ++i) {
+    for (size_t i = 0; i < denseGSCloud->points.size(); ++i) {
         pcl::Indices thisGSindices;
-		std::vector<float> thisGSsqrDistances;
-		kdtree.radiusSearch(denseGSCloud->points[i], 0.01, thisGSindices, thisGSsqrDistances);
+        std::vector<float> thisGSsqrDistances;
+        kdtree.radiusSearch(denseGSCloud->points[i], 0.01, thisGSindices, thisGSsqrDistances);
         // printfmt("thisGSindices: {}", thisGSindices.size());
-;       if (thisGSindices.size() > 10) {
+        if (thisGSindices.size() > 10) {
             #pragma omp critical
             nodeCloud->points.push_back(denseGSCloud->points[i]);
         }
-	}
+    }
     cout << "kd tree 完成" << endl;
     viewer.addPointCloud(nodeCloud, "nodeCloud");
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 20, "nodeCloud");
-    viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 1,0, 1, "nodeCloud");
+    viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 1, 0, 1, "nodeCloud");
     cout << "渲染Node CLoud" << endl;
     while (!viewer.wasStopped()) {
         viewer.spinOnce();
