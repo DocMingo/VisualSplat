@@ -1,6 +1,6 @@
-/*
+ï»¿/*
 * @author: Mingo
-2025-9-4: reestablish: ÖØ½¨,Ê¹¸´Ô­,Ê¹¸´Î»
+2025-9-4: reestablish: é‡å»º,ä½¿å¤åŸ,ä½¿å¤ä½
 */
 #include <iostream>
 #include <Splats.h>
@@ -8,7 +8,7 @@
 // #include <glm/glm.hpp>
 // #include <glm/gtc/matrix_transform.hpp>
 // #include <glm/gtc/type_ptr.hpp>
-#include<pcl/common/common.h> // »ù´¡¹¦ÄÜ£¬±ÈÈç getMinMax3D
+#include<pcl/common/common.h> // åŸºç¡€åŠŸèƒ½ï¼Œæ¯”å¦‚ getMinMax3D
 #include<pcl/io/pcd_io.h>
 #include<pcl/visualization/pcl_visualizer.h>
 #include<pcl/common/transforms.h>
@@ -30,13 +30,14 @@
 #include <Eigen/Dense>
 
 #include <pcl/kdtree/kdtree_flann.h>
+#include "Alphaâ€‘shape.h"
 
 using namespace std;
 
-// ĞŞ¸ÄºóµÄÖ÷º¯Êı - ¼¯³ÉCUDAÅÅĞò
+// ä¿®æ”¹åçš„ä¸»å‡½æ•° - é›†æˆCUDAæ’åº
 int main() {
     pcl::visualization::PCLVisualizer viewer("3D Viewer");
-    printfmt("Ä¿Ç°µÄ¹¤×÷Â·¾¶Îª{}\n", fs::current_path().string());
+    printfmt("ç›®å‰çš„å·¥ä½œè·¯å¾„ä¸º{}\n", fs::current_path().string());
     std::map<std::string, std::string> config_map;
     try {
         config_map = parseFileData(R"(.\src\resources\config.txt)");
@@ -45,61 +46,70 @@ int main() {
         printfmt("{}\n", e.what());
     }
 
-    printfmt("¶ÁÈ¡¸ßË¹Êı¾İ£º{}", config_map["GSpath"]);
-    // spdlog::info("¶ÁÈ¡¸ßË¹Êı¾İ:{}", config_map["GSpath"]);
+    printfmt("è¯»å–é«˜æ–¯æ•°æ®ï¼š{}", config_map["GSpath"]);
+    // spdlog::info("è¯»å–é«˜æ–¯æ•°æ®:{}", config_map["GSpath"]);
     GScloudPtr Gaussian_cloud(new pcl::PointCloud<GaussianData>);
     auto ret_value = pcl::io::loadPLYFile<GaussianData>(config_map["GSpath"], *Gaussian_cloud);
     int numInstances = Gaussian_cloud->points.size();
     if (!ret_value) {
-        cout << "¸ßË¹³õÊ¼»¯³É¹¦, µãÊıÎª" << numInstances << endl;
+        cout << "é«˜æ–¯åˆå§‹åŒ–æˆåŠŸ, ç‚¹æ•°ä¸º" << numInstances << endl;
     }
-    // Éú³É¸ßË¹ÂÏÉúµãÔÆ
-    Eigen::MatrixXf eigenMat(3, numInstances);
-    eigenMat = Gaussian_cloud->getMatrixXfMap().block(0, 0, 3, numInstances);
+    // ç”Ÿæˆé«˜æ–¯å­ªç”Ÿç‚¹äº‘
+    // Eigen::MatrixXf eigenMat(3, numInstances);
+    // eigenMat = Gaussian_cloud->getMatrixXfMap().block(0, 0, 3, numInstances);
     // pcl::PointCloud<pcl::PointXYZ>::Ptr TwinBornCloud{ new pcl::PointCloud<pcl::PointXYZ> };
     // TwinBornCloud->resize(numInstances);
-    // TwinBornCloud->assign(numInstances, pcl::PointXYZ()); // ÈİÆ÷ TwinBornCloud µÄ´óĞ¡±äÎª eigenMat.cols(), Ã¿¸öÔªËØ¶¼ÊÇÄ¬ÈÏµÄ pcl::PointXYZ(0, 0, 0)
+    // TwinBornCloud->assign(numInstances, pcl::PointXYZ()); // å®¹å™¨ TwinBornCloud çš„å¤§å°å˜ä¸º eigenMat.cols(), æ¯ä¸ªå…ƒç´ éƒ½æ˜¯é»˜è®¤çš„ pcl::PointXYZ(0, 0, 0)
     // TwinBornCloud->getMatrixXfMap().block(0, 0, 3, numInstances) = eigenMat;
     // viewer.addPointCloud(TwinBornCloud, "TwinCloud");
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr denseGSCloud{ new pcl::PointCloud<pcl::PointXYZ>() }; // ÓÃÓÚ´æ´¢¸ßË¹¼Ü¹¹µãÔÆ
+    pcl::PointCloud<pcl::PointXYZ>::Ptr denseGSCloud{ new pcl::PointCloud<pcl::PointXYZ>() }; // ç”¨äºå­˜å‚¨é«˜æ–¯æ¶æ„ç‚¹äº‘
     viewer.addPointCloud(denseGSCloud, "densecloud");
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 1, 0, 0, "densecloud");
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "densecloud");
-    // viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0.3, 0.3, 0.3, "TwinCloud");
+    // viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 1, "TwinCloud");
     // viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "TwinCloud");
 
     int num{ 10 };
     static int indices{ 0 };
+    std::vector<GaussianAxisInfo> GaussInfo{};
+    GaussInfo.reserve(Gaussian_cloud->size());
     for (const auto& gi : Gaussian_cloud->points) {
         indices++;
-        // 1. ¶ÔÓÚÃ¿¸ö¸ßË¹ÍÖÇò£¬Éú³É²ÎÊı±í
+        // 1. å¯¹äºæ¯ä¸ªé«˜æ–¯æ¤­çƒï¼Œç”Ÿæˆå‚æ•°è¡¨
         auto this_GaussianAxisInfo = extractGaussianAxes(gi); 
-        // 2. ¸ù¾İ²ÎÊı±íÉú³Éµ¥¸ö³íÃÜ¸ßË¹
+        GaussInfo.push_back(this_GaussianAxisInfo);
+        // 2. æ ¹æ®å‚æ•°è¡¨ç”Ÿæˆå•ä¸ªç¨ å¯†é«˜æ–¯
         pcl::PointCloud<pcl::PointXYZ>::Ptr GSpoints{ new pcl::PointCloud<pcl::PointXYZ> };
-        for (int i{-num/2}; i < num/2; ++i) {
+        for (int i{-num/2}; i < num/2; ++i) { // é«˜æ–¯ä¸»è½´ç”Ÿæˆ10ä¸ªç‚¹
 			float scale =  static_cast<float>(i)/num;
             pcl::PointXYZ thisPoint{};
 			thisPoint.getVector3fMap() = this_GaussianAxisInfo.center + this_GaussianAxisInfo.axis_directions[this_GaussianAxisInfo.longest_axis_idx] * this_GaussianAxisInfo.axis_lengths[this_GaussianAxisInfo.longest_axis_idx] * scale;
             GSpoints->points.push_back(thisPoint);
         }
         
+        // 2. å°†ç¨ å¯†é«˜æ–¯æ”¾å…¥æ€»ç¨ å¯†ç‚¹äº‘
+        *denseGSCloud += *GSpoints; // ->point è¿”å› vector
 
-        // 2. ½«³íÃÜ¸ßË¹·ÅÈë×Ü³íÃÜµãÔÆ
-        *denseGSCloud += *GSpoints; // ->point ·µ»Ø vector
-
-        if (indices % 100 == 0) {
-            // viewer.updatePointCloud(denseGSCloud, "densecloud");
-        }
+        // if (indices % 100 == 0) {
+        //     viewer.updatePointCloud(denseGSCloud, "densecloud");
+        // }
         // viewer.spinOnce();
     }
-    printfmt("denseGSCloud µãÔÆÊıÁ¿Îª{}", denseGSCloud->points.size());
-
+    Gaussian_cloud->clear();
+    printfmt("denseGSCloud ç‚¹äº‘æ•°é‡ä¸º{}", denseGSCloud->points.size());
+    viewer.updatePointCloud(denseGSCloud, "densecloud");
     // while (!viewer.wasStopped()) {
     //     viewer.spinOnce();
     // }
 
-	// ¶ÔÓÚ³íÃÜ¸ßË¹µãÔÆ¹¹½¨ KDTree, Éú³É½ÚµãµãÔÆ£¿
+    // å¯¹ç¨ å¯†ç‚¹äº‘ä½¿ç”¨ä¼ ç»Ÿé‡å»ºç®—æ³•è¿›è¡Œä¸‰è§’é‡å»º
+    runAS(denseGSCloud);
+    return 0;
+
+
+
+	// å¯¹äºç¨ å¯†é«˜æ–¯ç‚¹äº‘æ„å»º KDTree, ç”ŸæˆèŠ‚ç‚¹ç‚¹äº‘ï¼Ÿ çŸ¢é‡åŒ–æ˜¯å¦éœ€è¦èŠ‚ç‚¹ï¼Ÿ
     pcl::PointCloud<pcl::PointXYZ>::Ptr nodeCloud{ new pcl::PointCloud<pcl::PointXYZ> };
     
 	pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
@@ -108,17 +118,18 @@ int main() {
 	for (size_t i = 0; i < denseGSCloud->points.size(); ++i) {
         pcl::Indices thisGSindices;
 		std::vector<float> thisGSsqrDistances;
-		kdtree.radiusSearch(denseGSCloud->points[i], 0.1, thisGSindices, thisGSsqrDistances);
-        if (thisGSindices.size() > 20) {
+		kdtree.radiusSearch(denseGSCloud->points[i], 0.01, thisGSindices, thisGSsqrDistances);
+        // printfmt("thisGSindices: {}", thisGSindices.size());
+;        if (thisGSindices.size() > 10) {
             #pragma omp critical
             nodeCloud->points.push_back(denseGSCloud->points[i]);
         }
 	}
-    cout << "kd tree Íê³É" << endl;
+    cout << "kd tree å®Œæˆ" << endl;
     viewer.addPointCloud(nodeCloud, "nodeCloud");
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 20, "nodeCloud");
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 1,0, 1, "nodeCloud");
-    cout << "äÖÈ¾Node CLoud" << endl;
+    cout << "æ¸²æŸ“Node CLoud" << endl;
     while (!viewer.wasStopped()) {
         viewer.spinOnce();
     }

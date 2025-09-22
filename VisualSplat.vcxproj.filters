@@ -15,86 +15,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="G:\pointcloudrendering\Glad\src\glad.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="include\Splats.h">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\utils.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\viewer.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="include\utils.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\resources\imgui\imgui.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\resources\imgui\backends\imgui_impl_glfw.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\resources\imgui\backends\imgui_impl_opengl3.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\resources\imgui\imgui_demo.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\resources\imgui\imgui_tables.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\resources\imgui\imgui_widgets.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\resources\imgui\imgui_draw.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Viewer_sample.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\VisualSplats.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\Splats.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unsuck.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
-    <None Include="src\resources\shader\camera.vs" />
-    <None Include="src\resources\shader\camera.fs" />
-    <None Include="src\resources\shader\2.2.light_cube.vs" />
-    <None Include="src\resources\shader\2.2.light_cube.fs" />
-    <None Include="src\resources\shader\fragment_shader.glsl" />
-    <None Include="src\resources\shader\vertex_shader.glsl" />
-    <None Include="src\resources\shader\fs.glsl" />
-    <None Include="src\resources\shader\vs.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\stb_image.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\stb_image_write.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\learnopengl\camera.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\shader_m.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\utils.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="include\Header.cuh" />
-    <ClInclude Include="include\ImGuiFPSDisplay.hpp">
+    <ClInclude Include="src\Alpha‑shape.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\point_cloud_render_camera.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="include\File.cu" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="src\resources\config.txt" />

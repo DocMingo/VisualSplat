@@ -229,6 +229,7 @@
     <ClCompile Include="src\VisualSplats.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Alpha‑shape.h" />
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
     <ClInclude Include="include\Header.cuh" />
   </ItemGroup>
