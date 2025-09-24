@@ -218,15 +218,15 @@ struct Buffer {
 };
 
 inline const std::string currentDatetime() {
-  time_t now = time(0);
-  struct tm tstruct;
-  char buf[80];
-  tstruct = *localtime(&now);
-  // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
-  // for more information about the date/time format
-  strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+	time_t now = time(0);
+	struct tm tstruct;
+	char buf[80];
+	tstruct = *localtime(&now);
+	// Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+	// for more information about the date/time format
+	strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
 
-  return std::string("\033[34m") + buf + "\033[0m";
+	return std::string("\033[34m") + buf + "\033[0m";
 }
 
 
@@ -768,18 +768,18 @@ using namespace std;
 template <typename... Args>
 inline void printfmt(std::string_view fmt, const Args &...args) {
 #ifdef __cpp_lib_format
-    struct thousandsSeparator : std::numpunct<char> {
-        char_type do_thousands_sep() const override { return '\''; }
-        string_type do_grouping() const override { return "\3"; }
-    };
-    auto thousands = std::make_unique<thousandsSeparator>();
-    auto locale = std::locale(std::cout.getloc(), thousands.release());
+	struct thousandsSeparator : std::numpunct<char> {
+		char_type do_thousands_sep() const override { return '\''; }
+		string_type do_grouping() const override { return "\3"; }
+	};
+	auto thousands = std::make_unique<thousandsSeparator>();
+	auto locale = std::locale(std::cout.getloc(), thousands.release());
 
-    std::cout << std::vformat(locale, fmt, std::make_format_args(args...));
-    std::cout.flush();
+	std::cout << std::vformat(locale, fmt, std::make_format_args(args...));
+	std::cout.flush();
 #else
-    fputs(fmt::vformat(fmt, fmt::make_format_args(args...)).c_str(), stdout);
-    fflush(stdout);
+	fputs(fmt::vformat(fmt, fmt::make_format_args(args...)).c_str(), stdout);
+	fflush(stdout);
 #endif
 }
 
@@ -789,53 +789,53 @@ train_path:"D:\pointcloudSrc\train"
 predict_path:"D:\pointcloudSrc\train\class2"
 }
 */
-std::map<std::string, std::string> parseFileData(const std::string &filePath);
+std::map<std::string, std::string> parseFileData(const std::string& filePath);
 
- // 运行命令并将输出写入文件
-inline int run_cmd(const char *cmd, const char *output_file) {
-  char MsgBuff[65536];
-  int MsgLen = 65532;
-  FILE *fp;
-  FILE *out_fp = fopen(output_file, "w"); // w: 创建，写入，清空； a: 追加
+// 运行命令并将输出写入文件
+inline int run_cmd(const char* cmd, const char* output_file) {
+	char MsgBuff[65536];
+	int MsgLen = 65532;
+	FILE* fp;
+	FILE* out_fp = fopen(output_file, "w"); // w: 创建，写入，清空； a: 追加
 
-  if (out_fp == NULL) {
-    std::cerr << "无法打开输出文件: " << output_file << std::endl;
-    return -1;
-  }
+	if (out_fp == NULL) {
+		std::cerr << "无法打开输出文件: " << output_file << std::endl;
+		return -1;
+	}
 
-  if (cmd == NULL) {
-    fclose(out_fp);
-    return -1;
-  }
+	if (cmd == NULL) {
+		fclose(out_fp);
+		return -1;
+	}
 
 #ifdef _WIN32
-  if ((fp = _popen(cmd, "r")) == NULL) {
-    fclose(out_fp);
-    return -2;
-  }
+	if ((fp = _popen(cmd, "r")) == NULL) {
+		fclose(out_fp);
+		return -2;
+	}
 #elif __linux__
-  if ((fp = popen(cmd, "r")) == NULL) {
-    fclose(out_fp);
-    return -2;
-  }
+	if ((fp = popen(cmd, "r")) == NULL) {
+		fclose(out_fp);
+		return -2;
+	}
 #endif // _WIN32
 
-  memset(MsgBuff, 0, MsgLen);
-  while (fgets(MsgBuff, MsgLen, fp) != NULL) {
-    fprintf(out_fp, "%s", MsgBuff);
-    std::cout << MsgBuff;
-  }
+	memset(MsgBuff, 0, MsgLen);
+	while (fgets(MsgBuff, MsgLen, fp) != NULL) {
+		fprintf(out_fp, "%s", MsgBuff);
+		std::cout << MsgBuff;
+	}
 #ifdef _WIN32
-  if (_pclose(fp) == -1) {
-    fclose(out_fp);
-    return -3;
-  }
+	if (_pclose(fp) == -1) {
+		fclose(out_fp);
+		return -3;
+	}
 #else
-  if (pclose(fp) == -1) {
-    fclose(out_fp);
-    return -3;
-  }
+	if (pclose(fp) == -1) {
+		fclose(out_fp);
+		return -3;
+	}
 #endif
-  fclose(out_fp);
-  return 0;
+	fclose(out_fp);
+	return 0;
 }

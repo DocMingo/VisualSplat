@@ -106,7 +106,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>G:\workspace\RunMyGauss\include;$(ProjectDir)include;D:\Work\VSProject\VisualSplat\src\resources;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;D:\Work\VSProject\VisualSplat\src\resources;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <ExternalIncludePath>;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
@@ -226,10 +226,11 @@
     <ClCompile Include="include\Splats.h" />
     <ClCompile Include="src\GaPoseOptimization.cpp" />
     <ClCompile Include="src\Splats.cpp" />
+    <ClCompile Include="src\SplatsUtils.cpp" />
     <ClCompile Include="src\unsuck.cpp" />
-    <ClCompile Include="src\VisualSplats.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\unsuck.hpp" />
     <ClInclude Include="src\Alpha‑shape.h" />
     <None Include="..\Li_play\src\GitGudOpenGL\VisualSplat.md" />
     <ClInclude Include="include\Header.cuh" />

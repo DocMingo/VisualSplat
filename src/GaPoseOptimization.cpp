@@ -1,22 +1,25 @@
 ﻿/*
 * @author: Mingo
 2025-9-22: 使用高斯主轴方向优化杆塔三角化模型
+识别
+高斯滤波器，一个高斯点需要在另一个高斯的椭球空间内包含。
+高斯近邻基元主轴交叉感知算子
 */
 #include <iostream>
 #include <Splats.h>
 #include <unsuck.hpp>
-#include<pcl/common/common.h> // 基础功能，比如 getMinMax3D
-#include<pcl/io/pcd_io.h>
-#include<pcl/visualization/pcl_visualizer.h>
-#include<pcl/common/transforms.h>
+#include <pcl/common/common.h> // 基础功能，比如 getMinMax3D
+#include <pcl/io/pcd_io.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/common/transforms.h>
 #include <Eigen/Geometry>
 
 // #include<pcl/io/ply/ply_parser.h>
-#include<pcl/io/ply_io.h>
-#include<vector>
+#include <pcl/io/ply_io.h>
+#include <vector>
 // #include<spdlog/spdlog.h>
-#include<fmt/format.h>
-#include<filesystem>
+#include <fmt/format.h>
+#include <filesystem>
 // #include<dmyDependence/dmyTool.h>
 
 #include "cudaGL.h"
@@ -52,15 +55,16 @@ int main() {
         cout << "高斯初始化成功, 点数为" << numInstances << endl;
     }
     // 生成高斯孪生点云
-    // Eigen::MatrixXf eigenMat(3, numInstances);
-    // eigenMat = Gaussian_cloud->getMatrixXfMap().block(0, 0, 3, numInstances);
-    // pcl::PointCloud<pcl::PointXYZ>::Ptr TwinBornCloud{ new pcl::PointCloud<pcl::PointXYZ> };
-    // TwinBornCloud->resize(numInstances);
-    // TwinBornCloud->assign(numInstances, pcl::PointXYZ()); // 容器 TwinBornCloud 的大小变为 eigenMat.cols(), 每个元素都是默认的 pcl::PointXYZ(0, 0, 0)
-    // TwinBornCloud->getMatrixXfMap().block(0, 0, 3, numInstances) = eigenMat;
-    // viewer.addPointCloud(TwinBornCloud, "TwinCloud");
+    Eigen::MatrixXf eigenMat(3, numInstances);
+    eigenMat = Gaussian_cloud->getMatrixXfMap().block(0, 0, 3, numInstances);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr TwinBornCloud{ new pcl::PointCloud<pcl::PointXYZ> };
+    TwinBornCloud->resize(numInstances);
+    TwinBornCloud->assign(numInstances, pcl::PointXYZ()); // 容器 TwinBornCloud 的大小变为 eigenMat.cols(), 每个元素都是默认的 pcl::PointXYZ(0, 0, 0)
+    TwinBornCloud->getMatrixXfMap().block(0, 0, 3, numInstances) = eigenMat;
+    
+    viewer.addPointCloud(TwinBornCloud, "TwinCloud");
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr denseGSCloud{ new pcl::PointCloud<pcl::PointXYZ>() }; // 用于存储高斯架构点云
+    pcl::PointCloud<pcl::PointXYZ>::Ptr denseGSCloud{ new pcl::PointCloud<pcl::PointXYZ>() }; // 用于存储高斯主轴扩展点云
     viewer.addPointCloud(denseGSCloud, "densecloud");
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 1, 0, 0, "densecloud");
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "densecloud");
