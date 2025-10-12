@@ -224,10 +224,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="include\Splats.h" />
-    <ClCompile Include="src\GaPoseOptimization.cpp" />
     <ClCompile Include="src\Splats.cpp" />
     <ClCompile Include="src\SplatsUtils.cpp" />
     <ClCompile Include="src\unsuck.cpp" />
+    <ClCompile Include="src\VisualSplats.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\unsuck.hpp" />

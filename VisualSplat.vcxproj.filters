@@ -24,10 +24,10 @@
     <ClCompile Include="src\unsuck.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\GaPoseOptimization.cpp">
+    <ClCompile Include="src\SplatsUtils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\SplatsUtils.cpp">
+    <ClCompile Include="src\VisualSplats.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -105,7 +105,7 @@ int main() {
 
     {
         // 对稠密点云使用传统重建算法进行三角重建
-        // runAS(denseGSCloud);
+        runAS(denseGSCloud);
     }
 
 	// 对于稠密高斯点云构建 KDTree, 生成node节点

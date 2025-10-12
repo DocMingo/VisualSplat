@@ -20,7 +20,7 @@ void runAS(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 
 	pcl::PolygonMesh mesh;
 	cavehull.reconstruct(mesh);// 重建面要素到mesh 
-	pcl::io::saveOBJFile("object_mesh_1.obj", mesh);
+	pcl::io::saveOBJFile("object_mesh_3d.obj", mesh);
 	cout << "Concave hull has: " << surface_hull->points.size() << " data points." << endl;
 	// 保存结果
 	pcl::PCDWriter writer;
