@@ -767,20 +767,9 @@ using namespace std;
 
 template <typename... Args>
 inline void printfmt(std::string_view fmt, const Args &...args) {
-#ifdef __cpp_lib_format
-	struct thousandsSeparator : std::numpunct<char> {
-		char_type do_thousands_sep() const override { return '\''; }
-		string_type do_grouping() const override { return "\3"; }
-	};
-	auto thousands = std::make_unique<thousandsSeparator>();
-	auto locale = std::locale(std::cout.getloc(), thousands.release());
-
-	std::cout << std::vformat(locale, fmt, std::make_format_args(args...));
-	std::cout.flush();
-#else
-	fputs(fmt::vformat(fmt, fmt::make_format_args(args...)).c_str(), stdout);
+	fputs(std::vformat(fmt, std::make_format_args(args...)).c_str(), stdout);
 	fflush(stdout);
-#endif
+
 }
 
 /*

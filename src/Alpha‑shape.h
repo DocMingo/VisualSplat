@@ -14,7 +14,7 @@ void runAS(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 	pcl::PointCloud<pcl::PointXYZ>::Ptr surface_hull(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::ConcaveHull<pcl::PointXYZ> cavehull;
 	cavehull.setInputCloud(cloud);
-	cavehull.setAlpha(0.01);
+	cavehull.setAlpha(0.1);
 	vector<pcl::Vertices> polygons;
 	cavehull.reconstruct(*surface_hull, polygons);// 重建面要素到点云
 

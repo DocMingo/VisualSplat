@@ -18,7 +18,7 @@
 #include<pcl/io/ply_io.h>
 #include<vector>
 // #include<spdlog/spdlog.h>
-#include<fmt/format.h>
+#include<format>
 #include<filesystem>
 // #include<dmyDependence/dmyTool.h>
 
@@ -26,7 +26,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include "../include/Header.cuh"
-#include <Eigen/Core>
+// #include <Eigen/Core>
 #include <Eigen/Dense>
 
 #include <pcl/kdtree/kdtree_flann.h>
